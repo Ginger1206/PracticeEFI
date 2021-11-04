@@ -1,0 +1,51 @@
+#/*++
+#
+#  Module Name:
+#
+#    DrawGame.inf
+#
+#  Abstract:
+#
+#    A Draw Game module for EFI shell.
+#
+#--*/
+
+[defines]
+BASE_NAME            = DrawGame
+FILE_GUID            = ef7b2710-1ff6-4ef5-8e5f-38092ff666dc
+COMPONENT_TYPE       = APPLICATION
+
+[sources.common]
+  DrawGame.c
+  ImageBlock.c
+  ..\_DevelopAddition\_Debug.c
+
+[includes.common]
+  .
+# EDK common include.
+  $(EDK_SOURCE)\Foundation
+  $(EDK_SOURCE)\Foundation\Efi
+  $(EDK_SOURCE)\Foundation\Efi\Include
+  $(EDK_SOURCE)\Foundation\Framework
+  $(EDK_SOURCE)\Foundation\Framework\Include
+  $(EDK_SOURCE)\Foundation\Include
+  $(EDK_SOURCE)\Foundation\Library\Dxe\Include
+  $(EDK_SOURCE)\Foundation\Efi\Protocol\PciRootBridgeIo 
+  
+# Solar-System common include.
+  $(SOLAR_SDK_SOURCE)\Common\Include
+  $(SOLAR_SDK_SOURCE)\Common\Library\Include
+  $(SOLAR_SDK_SOURCE)\Common\Include\EdkReplace\Foundation\Include
+
+[libraries.common]
+  EfiDriverLib
+  SolarConsoleLib
+  SolarGraphicsLib
+  SolarCppLib
+
+[nmake.common]
+  #C_STD_INCLUDE=
+  IMAGE_ENTRY_POINT=DrawGame
+  #
+  C_STD_FLAGS = $(C_STD_FLAGS) /TP
+
