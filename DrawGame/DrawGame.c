@@ -35,7 +35,8 @@ extern "C" {
 //extern EFI_GRAPHICS_OUTPUT_BLT_PIXEL TransparentColor;
 EFI_GRAPHICS_OUTPUT_BLT_PIXEL TransparentColor; //型態問題D幫解，先把extern拿掉試試
 UINT16						  ChessBlockAmount;
-INT32				Locate[25][25];
+INT32					  	  Locate[25][25];
+INT32					  	  **MaskAry[25][25];
 
 
 
@@ -67,8 +68,8 @@ Returns:
 --*/
 {
 	EFI_STATUS    		  Status;
-	UINT16 x2=X+COLOR_BLOCK_EDGE;
-	UINT16 y2=Y+COLOR_BLOCK_EDGE;
+	UINT16 				  x2 = X + COLOR_BLOCK_EDGE;
+	UINT16 				  y2 = Y + COLOR_BLOCK_EDGE;
 
 	//> d < u		                                                          //哪個方向保留那個其他三個畫為白
 	DrawLine( pGraphOutput, &Image,   X,   Y,  x2,   Y, SOLAR_RED, FullLine); //上移
@@ -76,7 +77,7 @@ Returns:
 	DrawLine( pGraphOutput, &Image,  x2,  y2,   X,  y2, SOLAR_RED, FullLine); //下移
 	DrawLine( pGraphOutput, &Image,   X,  y2,   X,   Y, SOLAR_RED, FullLine); //左移
 
-	Status=(pGraphOutput)->Blt(pGraphOutput,Image.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, Image.Width, Image.Height, 0);
+	Status = (pGraphOutput)->Blt(pGraphOutput, Image.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, Image.Width, Image.Height, 0);
 	
 	return SOLAR_SUCCESS;
 }
@@ -93,8 +94,8 @@ MovDelBdy(
   )
 {
 	EFI_STATUS    		  Status;
-	UINT16 x2=X+COLOR_BLOCK_EDGE; 
-	UINT16 y2=Y+COLOR_BLOCK_EDGE;
+	UINT16      		  x2 = X + COLOR_BLOCK_EDGE; 
+	UINT16 			  	  y2 = Y + COLOR_BLOCK_EDGE;
 
 	switch (ScanCode)
 	{
@@ -123,15 +124,22 @@ MovDelBdy(
 		break;
 		
 	}
-	Status=(pGraphOutput)->Blt(pGraphOutput,Image.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, Image.Width, Image.Height, 0);
+	Status = (pGraphOutput)->Blt(pGraphOutput, Image.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, Image.Width, Image.Height, 0);
 
 	return SOLAR_SUCCESS;
 }
-
-
+/*
+原呼叫主程式
+case CHAR_F: //倒色 SOLAR_DEEPPINK
+	LX = (X - COLOR_BOARD_X1) / COLOR_BLOCK_EDGE;
+	LY = (Y - COLOR_BOARD_Y1) / COLOR_BLOCK_EDGE;
+	DesireColor = Locate[LX][LY];
+	FillRecursion(*pGraph, DrawingBoard, LX, LY, SOLAR_DEEPPINK, DesireColor);
+	break;
+*/
 SOLAR_STATUS
 SOLAR_LIB
-FillRecurion(
+FillRecursion(
   IN     EFI_GRAPHICS_OUTPUT_PROTOCOL *pGraphOutput,
   IN OUT SOLAR_IMAGE_INPUT            Image,
   IN     UINT16                       LX,
@@ -140,29 +148,54 @@ FillRecurion(
   IN	 INT32						  DesireColor
   )
 {
-	EFI_STATUS    		Status;
-	UINT16 				a=50+(LX*COLOR_BLOCK_EDGE); 
-	UINT16 				b=25+(LY*COLOR_BLOCK_EDGE);
+	//EFI_STATUS    		Status; //T
+	UINT16 				a = 50 + (LX * COLOR_BLOCK_EDGE); //T
+	UINT16 				b = 25 + (LY * COLOR_BLOCK_EDGE); //T
 
-	if(!(LX>=0 && LX<25 && LY>=0 && LY <25))return SOLAR_SUCCESS;
-	if(Locate[LX][LY]!=DesireColor)return SOLAR_SUCCESS; //if(Locate[LX][LY]==DesireColor) 
-	if(Locate[LX][LY]==NewColor)return SOLAR_SUCCESS;
-	DrawRectangle(pGraphOutput, &Image, a, b, a+COLOR_BLOCK_EDGE, b+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, NewColor, 3); 
-	Status=(pGraphOutput)->Blt(pGraphOutput,Image.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, Image.Width, Image.Height, 0);
-	Locate[LX][LY]=NewColor;
+	if( ! ( LX>=0 && LX<25 && LY>=0 && LY<25) ) return SOLAR_SUCCESS;
+	if(Locate[LX][LY] != DesireColor) return SOLAR_SUCCESS; //if(Locate[LX][LY]==DesireColor) 
+	if(Locate[LX][LY] == NewColor) return SOLAR_SUCCESS;
+	DrawRectangle(pGraphOutput, &Image, a, b, a+COLOR_BLOCK_EDGE, b+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, NewColor, 3); //T 
+	//Status = (pGraphOutput)->Blt(pGraphOutput, Image.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, Image.Width, Image.Height, 0); //T
+	Locate[LX][LY] = NewColor;
 	
-	FillRecurion(pGraphOutput,Image,LX+1,LY,NewColor,DesireColor);
-	FillRecurion(pGraphOutput,Image,LX-1,LY,NewColor,DesireColor);
-	FillRecurion(pGraphOutput,Image,LX,LY+1,NewColor,DesireColor);
-	FillRecurion(pGraphOutput,Image,LX,LY-1,NewColor,DesireColor);
+	FillRecursion(pGraphOutput, Image,  LX+1,    LY, NewColor, DesireColor);
+	FillRecursion(pGraphOutput, Image,  LX-1,    LY, NewColor, DesireColor);
+	FillRecursion(pGraphOutput, Image,    LX,  LY+1, NewColor, DesireColor);
+	FillRecursion(pGraphOutput, Image,    LX,  LY-1, NewColor, DesireColor);
+	
+	return SOLAR_SUCCESS;
+}
+/*
+//*******************Try for output mask Array
+SOLAR_STATUS
+SOLAR_LIB
+FillRecursion(
+  //IN OUT INT32					  	  MaskAry,
+  IN     UINT16                       LX,
+  IN     UINT16                       LY,
+  IN     INT32						  NewColor,
+  IN	 INT32						  DesireColor
+  )
+{
+	if( ! ( LX>=0 && LX<25 && LY>=0 && LY<25) ) return SOLAR_SUCCESS;
+	if(Locate[LX][LY] != DesireColor) return SOLAR_SUCCESS; //if(Locate[LX][LY]==DesireColor) 
+	if(Locate[LX][LY] == NewColor) return SOLAR_SUCCESS;
+
+	Locate[LX][LY] = NewColor;
+	//MaskAry[LX][LY]  = 1;
+	
+	FillRecursion(  LX+1,    LY, NewColor, DesireColor);
+	FillRecursion(  LX-1,    LY, NewColor, DesireColor);
+	FillRecursion(    LX,  LY+1, NewColor, DesireColor);
+	FillRecursion(    LX,  LY-1, NewColor, DesireColor);
 	
 	return SOLAR_SUCCESS;
 }
 
-/*
 SOLAR_STATUS
 SOLAR_LIB
-FillRecurion(
+FillRecursion(
   IN     EFI_GRAPHICS_OUTPUT_PROTOCOL *pGraphOutput,
   IN OUT SOLAR_IMAGE_INPUT            Image,
   IN     UINT16                       LX,
@@ -190,7 +223,7 @@ FillRecurion(
 		if(!(LX+s[i]>=0 && LX+s[i]<25 && LY+w[i]>=0 &&LY+w[i] <25))continue;
 		if(Locate[LX+s[i]][LY+w[i]]==DesireColor)
 		{
-			return FillRecurion(pGraphOutput,Image,LX+s[i],LY+w[i],NewColor,DesireColor);
+			return FillRecursion(pGraphOutput,Image,LX+s[i],LY+w[i],NewColor,DesireColor);
 		}
 		
 	}
@@ -231,7 +264,6 @@ SOLAR_API
 GraphicsSimpleDemo(
 	EFI_GRAPHICS_OUTPUT_PROTOCOL  **pGraph,
 	SOLAR_IMAGE_INPUT			  *Image
-	//COLOR_BLOCK_INFO			  **ColorBlock //**ColorBlock
 )
 {
 	EFI_STATUS    		Status;
@@ -239,43 +271,43 @@ GraphicsSimpleDemo(
 	INT16				CoordinateX = COLOR_BOARD_X1; 
 	INT16				CoordinateY = COLOR_BOARD_Y1; 
 	UINT16				X = CoordinateX, Y = CoordinateY;
-	UINT16              LX=0,LY=0; //INT32				LX=0,LY=0;
-	INT32				DesireColor=0;
+	UINT16              LX = 0, LY = 0; //INT32				LX=0,LY=0;
+	INT32				DesireColor = 0;
 	
 	
-	SOLAR_IMAGE_INPUT	DrawingBoard; 
 	SOLAR_IMAGE_INPUT	SelectBar;
-	SOLAR_IMAGE_INPUT	TryBackGround; 
+	SOLAR_IMAGE_INPUT	DrawingBoard; 
+	//SOLAR_IMAGE_INPUT	TryBG; 
 	//SOLAR_IMAGE_INPUT	AllviewBoard;//for reset
-
-	DrawingBoard.BltBuffer=(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)NULL;
-	DrawingBoard.Width=630;
-	DrawingBoard.Height=550;
 
 	SelectBar.BltBuffer=(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)NULL;
 	SelectBar.Width=170;
 	SelectBar.Height=600;
 
-	TryBackGround.BltBuffer=(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)NULL; //
-	TryBackGround.Width=630; //
-	TryBackGround.Height=550; //
+	DrawingBoard.BltBuffer=(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)NULL; //
+	DrawingBoard.Width=630; //
+	DrawingBoard.Height=550; //
 /*
+	TryBG.BltBuffer=(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)NULL;
+	TryBG.Width=630;
+	TryBG.Height=550;
+
 	AllviewBoard.BltBuffer=(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)NULL;
 	AllviewBoard.Width=630;
 	AllviewBoard.Height=550;
 */
-	if((DrawingBoard.BltBuffer = (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) EfiLibAllocatePool(DrawingBoard.Width * DrawingBoard.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL)))==NULL){
-		return EFI_OUT_OF_RESOURCES;
-	}
-
 	if ((SelectBar.BltBuffer = (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) EfiLibAllocatePool(SelectBar.Width * SelectBar.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL)))==NULL){
 		return EFI_OUT_OF_RESOURCES;
 	}
 
-	if ((TryBackGround.BltBuffer = (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) EfiLibAllocatePool(TryBackGround.Width * TryBackGround.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL)))==NULL){
+	if ((DrawingBoard.BltBuffer = (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) EfiLibAllocatePool(DrawingBoard.Width * DrawingBoard.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL)))==NULL){
 		return EFI_OUT_OF_RESOURCES;
 	} //
 /*
+	if((TryBG.BltBuffer = (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) EfiLibAllocatePool(TryBG.Width * TryBG.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL)))==NULL){
+		return EFI_OUT_OF_RESOURCES;
+	}
+
 	if((AllviewBoard.BltBuffer = (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) EfiLibAllocatePool(AllviewBoard.Width * AllviewBoard.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL)))==NULL){
 		return EFI_OUT_OF_RESOURCES;
 	}
@@ -303,327 +335,162 @@ GraphicsSimpleDemo(
 	//Select function Bar(之後可以跟畫框一起Show出來先把Function做好)
 	EfiSetMem(SelectBar.BltBuffer, SelectBar.Width * SelectBar.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL), 0);
 	FillScreen(*pGraph, SOLAR_YELLOW);
-	PrintString(*pGraph, &SelectBar, 0, 30, SOLAR_WHITE, L" 'Backspace' : Reset Board ");
-	PrintString(*pGraph, &SelectBar, 0, 60, SOLAR_WHITE, L" 'SPACE' : Make Boundary ");//show不出來 鑽太久惹 650 20是800600的位置 要以Select的大小畫
-	PrintString(*pGraph, &SelectBar, 0, 90, SOLAR_WHITE, L" 'D' : Delete Single Boundary ");
+	PrintString(*pGraph, &SelectBar, 0,  30, SOLAR_WHITE, L" 'Backspace' : Reset Board ");
+	PrintString(*pGraph, &SelectBar, 0,  60, SOLAR_WHITE, L" 'SPACE' : Make Boundary ");//show不出來 鑽太久惹 650 20是800600的位置 要以Select的大小畫
+	PrintString(*pGraph, &SelectBar, 0,  90, SOLAR_WHITE, L" 'D' : Delete Single Boundary ");
 	PrintString(*pGraph, &SelectBar, 0, 120, SOLAR_WHITE, L" 'F' : Fill Color ");
 
-	EfiSetMem(TryBackGround.BltBuffer, TryBackGround.Width * TryBackGround.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL), EFI_GREEN);
+	EfiSetMem(DrawingBoard.BltBuffer, DrawingBoard.Width * DrawingBoard.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL), EFI_GREEN);
 	FillScreen(*pGraph, SOLAR_BLACK); //SOLAR_YELLOW
 	//EfiSetMem(ColorBlock.BltBuffer, ColorBlock.Height*ColorBlock.Width*sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL),0);
 	//Status=(*pGraph)->Blt(*pGraph,ColorBlock.BltBuffer, EfiBltBufferToVideo, 0, 0,COLOR_BOARD_X1, COLOR_BOARD_Y1, ColorBlock.Width, ColorBlock.Height, 0); //COLOR_BOARD_X1, COLOR_BOARD_Y1,
 	
 	Status = (*pGraph)->Blt(*pGraph, SelectBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 630, 0, SelectBar.Width, SelectBar.Height, 0); //Select Bar
-	Status=(*pGraph)->Blt(*pGraph, TryBackGround.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, TryBackGround.Width, TryBackGround.Height, 0); //先畫背景
+	Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); //先畫背景
 	for (UINT16 i = 0; i < 26; i++) {
-		DrawHorizontalLine(*pGraph, &TryBackGround, CoordinateX, CoordinateY + i * COLOR_BLOCK_EDGE, COLOR_BOARD_WIDTH, SOLAR_WHITE, FullLine); 
-		DrawVerticalLine(*pGraph, &TryBackGround, CoordinateX + i * COLOR_BLOCK_EDGE, CoordinateY, COLOR_BOARD_HEIGH, SOLAR_WHITE, FullLine); 
+		DrawHorizontalLine(*pGraph, &DrawingBoard, CoordinateX, CoordinateY + i * COLOR_BLOCK_EDGE, COLOR_BOARD_WIDTH, SOLAR_WHITE, FullLine); 
+		DrawVerticalLine(*pGraph, &DrawingBoard, CoordinateX + i * COLOR_BLOCK_EDGE, CoordinateY, COLOR_BOARD_HEIGH, SOLAR_WHITE, FullLine); 
 	}
 
-	RecBoundary(*pGraph,TryBackGround,CoordinateX,CoordinateY);
+	RecBoundary(*pGraph, DrawingBoard, CoordinateX, CoordinateY);
 
-	UINT16 loop=1;
+	UINT16 loop = 1;
 	while(loop){
 		getch(&KeyCode);
 		switch (KeyCode.ScanCode)
 		{
 		case SCAN_UP:
-				if(Y<=CoordinateY){
-					MovDelBdy(*pGraph,TryBackGround,X,Y,KeyCode.ScanCode);
-					DrawLine(*pGraph, &TryBackGround,   X,   Y,  X+COLOR_BLOCK_EDGE,   Y, SOLAR_WHITE, FullLine); //上移
-					Status=(*pGraph)->Blt(*pGraph,TryBackGround.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, TryBackGround.Width, TryBackGround.Height, 0);
-					Y=CoordinateY+24*COLOR_BLOCK_EDGE;
-					RecBoundary(*pGraph,TryBackGround,X,Y);
+				if(Y <= CoordinateY){
+					MovDelBdy(*pGraph, DrawingBoard, X, Y, KeyCode.ScanCode);
+					DrawLine(*pGraph, &DrawingBoard, X, Y, X+COLOR_BLOCK_EDGE, Y, SOLAR_WHITE, FullLine); //上移
+					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0);
+					Y = CoordinateY + 24*COLOR_BLOCK_EDGE;
+					RecBoundary(*pGraph, DrawingBoard, X, Y);
 				}
 				else{
-					MovDelBdy(*pGraph,TryBackGround,X,Y,KeyCode.ScanCode);
-					Y-=COLOR_BLOCK_EDGE;
-					RecBoundary(*pGraph,TryBackGround,X,Y);
+					MovDelBdy(*pGraph, DrawingBoard, X, Y, KeyCode.ScanCode);
+					Y -= COLOR_BLOCK_EDGE;
+					RecBoundary(*pGraph, DrawingBoard, X, Y);
 				}
 				break;
 
 		case SCAN_DOWN:
-				if(Y>=CoordinateY+24*COLOR_BLOCK_EDGE){
-					MovDelBdy(*pGraph,TryBackGround,X,Y,KeyCode.ScanCode);
-					DrawLine( *pGraph, &TryBackGround,  X+COLOR_BLOCK_EDGE,  Y+COLOR_BLOCK_EDGE,   X,  Y+COLOR_BLOCK_EDGE, SOLAR_WHITE, FullLine); //下移
-					Status=(*pGraph)->Blt(*pGraph,TryBackGround.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, TryBackGround.Width, TryBackGround.Height, 0);
-					Y=CoordinateY;
-					RecBoundary(*pGraph,TryBackGround,X,Y);
+				if(Y >= CoordinateY + 24*COLOR_BLOCK_EDGE){
+					MovDelBdy(*pGraph, DrawingBoard, X, Y, KeyCode.ScanCode);
+					DrawLine( *pGraph, &DrawingBoard, X+COLOR_BLOCK_EDGE, Y+COLOR_BLOCK_EDGE, X, Y+COLOR_BLOCK_EDGE, SOLAR_WHITE, FullLine); //下移
+					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0);
+					Y = CoordinateY;
+					RecBoundary(*pGraph, DrawingBoard, X, Y);
 				}
 				else{
-					MovDelBdy(*pGraph,TryBackGround,X,Y,KeyCode.ScanCode);
-					Y+=COLOR_BLOCK_EDGE;
-					RecBoundary(*pGraph,TryBackGround,X,Y);
+					MovDelBdy(*pGraph, DrawingBoard, X, Y, KeyCode.ScanCode);
+					Y += COLOR_BLOCK_EDGE;
+					RecBoundary(*pGraph, DrawingBoard, X, Y);
 				}
 				break;
 		case SCAN_RIGHT:
-				if (X >= CoordinateX+24*COLOR_BLOCK_EDGE){
-					MovDelBdy(*pGraph,TryBackGround,X,Y,KeyCode.ScanCode);
-					DrawLine(*pGraph, &TryBackGround,  X+COLOR_BLOCK_EDGE,   Y,  X+COLOR_BLOCK_EDGE,  Y+COLOR_BLOCK_EDGE, SOLAR_WHITE, FullLine); //右移
-					Status=(*pGraph)->Blt(*pGraph,TryBackGround.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, TryBackGround.Width, TryBackGround.Height, 0);
-					X =CoordinateX;
-					RecBoundary(*pGraph,TryBackGround,X,Y);
+				if (X >= CoordinateX + 24*COLOR_BLOCK_EDGE){
+					MovDelBdy(*pGraph, DrawingBoard, X, Y, KeyCode.ScanCode);
+					DrawLine(*pGraph, &DrawingBoard, X+COLOR_BLOCK_EDGE, Y, X+COLOR_BLOCK_EDGE, Y+COLOR_BLOCK_EDGE, SOLAR_WHITE, FullLine); //右移
+					Status=(*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0);
+					X = CoordinateX;
+					RecBoundary(*pGraph, DrawingBoard, X, Y);
 				}
 				else{ //正常右移
-					MovDelBdy(*pGraph,TryBackGround,X,Y,KeyCode.ScanCode);
-					X+=COLOR_BLOCK_EDGE;
-					RecBoundary(*pGraph,TryBackGround,X,Y);
+					MovDelBdy(*pGraph, DrawingBoard, X, Y, KeyCode.ScanCode);
+					X += COLOR_BLOCK_EDGE;
+					RecBoundary(*pGraph, DrawingBoard, X, Y);
 				}
 				break;
 		case SCAN_LEFT:
 				if (X <= CoordinateX){
-					MovDelBdy(*pGraph,TryBackGround,X,Y,KeyCode.ScanCode);
-					DrawLine(*pGraph, &TryBackGround,   X,  Y+COLOR_BLOCK_EDGE,   X,   Y, SOLAR_WHITE, FullLine); //左移
-					Status=(*pGraph)->Blt(*pGraph,TryBackGround.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, TryBackGround.Width, TryBackGround.Height, 0);
-					X =CoordinateX+24*COLOR_BLOCK_EDGE;
-					RecBoundary(*pGraph,TryBackGround,X,Y);
+					MovDelBdy(*pGraph, DrawingBoard, X, Y, KeyCode.ScanCode);
+					DrawLine(*pGraph, &DrawingBoard, X, Y+COLOR_BLOCK_EDGE, X, Y, SOLAR_WHITE, FullLine); //左移
+					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0);
+					X = CoordinateX + 24*COLOR_BLOCK_EDGE;
+					RecBoundary(*pGraph, DrawingBoard, X, Y);
 				}
 				else{ 
-					MovDelBdy(*pGraph,TryBackGround,X,Y,KeyCode.ScanCode);
-					X-=COLOR_BLOCK_EDGE;
-					RecBoundary(*pGraph,TryBackGround,X,Y);
+					MovDelBdy(*pGraph, DrawingBoard, X, Y, KeyCode.ScanCode);
+					X -= COLOR_BLOCK_EDGE;
+					RecBoundary(*pGraph, DrawingBoard, X, Y);
 				}
 			break;
 		
 		case SCAN_ESC:
-			loop=0;
+			loop = 0;
 			break;
 		}
 
 		switch (KeyCode.UnicodeChar)
 		{
 		case CHAR_SPACE  :
-				DrawRectangle(*pGraph, &TryBackGround, X, Y, X+COLOR_BLOCK_EDGE, Y+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_PALEGREEN, 3);  
-				LX=(X-COLOR_BOARD_X1)/COLOR_BLOCK_EDGE;
-				LY=(Y-COLOR_BOARD_Y1)/COLOR_BLOCK_EDGE;
-				Locate[LX][LY]=SOLAR_PALEGREEN;
+				DrawRectangle(*pGraph, &DrawingBoard, X, Y, X+COLOR_BLOCK_EDGE, Y+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_PALEGREEN, 3);  
+				LX = (X-COLOR_BOARD_X1) / COLOR_BLOCK_EDGE;
+				LY = (Y-COLOR_BOARD_Y1) / COLOR_BLOCK_EDGE;
+				Locate[LX][LY] = SOLAR_PALEGREEN;
 				//PrintString(*pGraph, &SelectBar, 0, 120, SOLAR_WHITE, L" Locate :[%d][%d]",LX,LY);
 				//PrintString(*pGraph, &SelectBar, 0, 140, SOLAR_WHITE, L" L color %x",Locate[LX][LY]);
 				//Status = (*pGraph)->Blt(*pGraph, SelectBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 630, 0, SelectBar.Width, SelectBar.Height, 0); //Select Bar
-				Status = (*pGraph)->Blt(*pGraph, TryBackGround.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, TryBackGround.Width, TryBackGround.Height, 0); 
+				Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
 				break;
 		case CHAR_D: //刪除單格
-				DrawRectangle(*pGraph, &TryBackGround, X, Y, X+COLOR_BLOCK_EDGE, Y+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_BLACK, 3);
-				LX=(X-COLOR_BOARD_X1)/COLOR_BLOCK_EDGE;
-				LY=(Y-COLOR_BOARD_Y1)/COLOR_BLOCK_EDGE;
-				Locate[LX][LY]=SOLAR_BLACK;
-				Status = (*pGraph)->Blt(*pGraph, TryBackGround.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, TryBackGround.Width, TryBackGround.Height, 0); 
+				DrawRectangle(*pGraph, &DrawingBoard, X, Y, X+COLOR_BLOCK_EDGE, Y+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_BLACK, 3);
+				LX = (X-COLOR_BOARD_X1) / COLOR_BLOCK_EDGE;
+				LY = (Y-COLOR_BOARD_Y1) / COLOR_BLOCK_EDGE;
+				Locate[LX][LY] = SOLAR_BLACK;
+				Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
 				break;
 		case CHAR_BackSpace: //reset畫板
-				X=COLOR_BOARD_X1;
-				Y=COLOR_BOARD_Y1;
-		        EfiSetMem(TryBackGround.BltBuffer, TryBackGround.Width * TryBackGround.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL), EFI_BLACK);
+				X = COLOR_BOARD_X1;
+				Y = COLOR_BOARD_Y1;
+		        EfiSetMem(DrawingBoard.BltBuffer, DrawingBoard.Width * DrawingBoard.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL), EFI_BLACK);
 				for (UINT16 i = 0; i < 26; i++) {
-						DrawHorizontalLine(*pGraph, &TryBackGround, CoordinateX, CoordinateY + i * COLOR_BLOCK_EDGE, COLOR_BOARD_WIDTH, SOLAR_WHITE, FullLine); 
-						DrawVerticalLine(*pGraph, &TryBackGround, CoordinateX + i * COLOR_BLOCK_EDGE, CoordinateY, COLOR_BOARD_HEIGH, SOLAR_WHITE, FullLine); 
+						DrawHorizontalLine(*pGraph, &DrawingBoard, CoordinateX, CoordinateY + i * COLOR_BLOCK_EDGE, COLOR_BOARD_WIDTH, SOLAR_WHITE, FullLine); 
+						DrawVerticalLine(*pGraph, &DrawingBoard, CoordinateX + i * COLOR_BLOCK_EDGE, CoordinateY, COLOR_BOARD_HEIGH, SOLAR_WHITE, FullLine); 
 					}
-				RecBoundary(*pGraph,TryBackGround,X,Y);
-				Status=(*pGraph)->Blt(*pGraph, TryBackGround.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, TryBackGround.Width, TryBackGround.Height, 0);
-				for(int j=0;j<25;j++)
+				RecBoundary(*pGraph, DrawingBoard, X, Y);
+				Status=(*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0);
+				for(int j=0; j<25 ; j++)
 				{
-					for(int k=0;k<25;k++)
+					for(int k=0; k<25 ; k++)
 					{
-						Locate[j][k]=000000;
+						Locate[j][k] = 000000;
 					}
 				}
 				break;
 		//case CHAR_R: //復原成上一個樣子
+/*		case CHAR_F: //倒色 SOLAR_DEEPPINK
+				LX = (X - COLOR_BOARD_X1) / COLOR_BLOCK_EDGE;
+				LY = (Y - COLOR_BOARD_Y1) / COLOR_BLOCK_EDGE;
+				DesireColor = Locate[LX][LY];
+				//*MaskAry[25][25]= 0 ;
+				FillRecursion( LX, LY, SOLAR_DEEPPINK, DesireColor);
+				for(UINT16 j=0; j<25 ; j++)
+				{
+					UINT16 m=50+(j*COLOR_BLOCK_EDGE);
+					for(UINT16 k=0; k<25 ; k++)
+					{
+						UINT16 n=25+(k*COLOR_BLOCK_EDGE);
+						if(Locate[j][k]==SOLAR_DEEPPINK)
+						{
+							DrawRectangle(*pGraph, &DrawingBoard, m, n, m+COLOR_BLOCK_EDGE, n+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_DEEPPINK, 3); //T 
+						}
+						
+					}
+				}
+				Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); //T
+				break;
+*/
 		case CHAR_F: //倒色 SOLAR_DEEPPINK
-				LX=(X-COLOR_BOARD_X1)/COLOR_BLOCK_EDGE;
-				LY=(Y-COLOR_BOARD_Y1)/COLOR_BLOCK_EDGE;
-				DesireColor=Locate[LX][LY];
-				FillRecurion(*pGraph,TryBackGround,LX,LY,SOLAR_DEEPPINK,DesireColor);
+				LX = (X - COLOR_BOARD_X1) / COLOR_BLOCK_EDGE;
+				LY = (Y - COLOR_BOARD_Y1) / COLOR_BLOCK_EDGE;
+				DesireColor = Locate[LX][LY];
+				FillRecursion(*pGraph, DrawingBoard, LX, LY, SOLAR_DEEPPINK, DesireColor);
+				Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); //T
 				break;
-		}
 
-		//TransparentBltBufferToVideo(*pGraph,&AllviewBoard,&TryBackGround,CoordinateX,CoordinateY,TransparentColor);
-		//EfiSetMem(AllviewBoard.BltBuffer, AllviewBoard.Width * AllviewBoard.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL), EFI_GREEN);
-		//Status=(*pGraph)->Blt(*pGraph, AllviewBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, AllviewBoard.Width, AllviewBoard.Height, 0); //先畫背景
-				
-	}
-	/*
-    //d > u <
-	DrawLine(*pGraph, &TryBackGround, CoordinateX, CoordinateY, CoordinateX, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_RED,FullLine);
-	DrawLine(*pGraph, &TryBackGround, CoordinateX, CoordinateY+COLOR_BLOCK_EDGE, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_RED,FullLine);
-	DrawLine(*pGraph, &TryBackGround, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY, SOLAR_RED,FullLine);
-	DrawLine(*pGraph, &TryBackGround, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY, CoordinateX, CoordinateY, SOLAR_RED,FullLine);
-	*/
-	//Status=(*pGraph)->Blt(*pGraph,TryBackGround.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, TryBackGround.Width, TryBackGround.Height, 0);
-	//getch(&KeyCode);
-
-	
-
-/**************************************************************************************************************************************/
-
-	// Fill the black color into buffer. Line Demo => 25*25
-	EfiSetMem(DrawingBoard.BltBuffer, DrawingBoard.Width * DrawingBoard.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL), EFI_YELLOW);
-	//EfiSetMem(SelectBar.BltBuffer, SelectBar.Width * SelectBar.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL), EFI_YELLOW); //select Bar
-	FillScreen(*pGraph, SOLAR_YELLOW);
-	//PrintString(*pGraph, &DrawingBoard, 50, 50, SOLAR_WHITE, L"Width = %d, Height = %d",  DrawingBoard.Width, DrawingBoard.Height);
-	Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-	//getch(&KeyCode);
-	
-	
-	for (UINT16 i = 0; i < 26; i++) {
-		DrawHorizontalLine(*pGraph, &DrawingBoard, CoordinateX, CoordinateY + i * COLOR_BLOCK_EDGE, COLOR_BOARD_WIDTH, SOLAR_WHITE, FullLine); 
-		DrawVerticalLine(*pGraph, &DrawingBoard, CoordinateX + i * COLOR_BLOCK_EDGE, CoordinateY, COLOR_BOARD_HEIGH, SOLAR_WHITE, FullLine); 
-	}
-
-	DrawRectangle(*pGraph, &DrawingBoard, CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_BLACK, 3); 
-
-	//Back=DrawingBoard; //210422KG 記概念
-
-	Status = (*pGraph)->Blt(
-		*pGraph,
-		DrawingBoard.BltBuffer,
-		EfiBltBufferToVideo,
-		0,
-		0,
-		0,
-		0,
-		DrawingBoard.Width,
-		DrawingBoard.Height,
-		0
-	);
-
-	
-
-	//Listen event
-	UINT16 boolean =1;
-	//DrawRectangle(*pGraph, &DrawingBoard, 150, 50, 170, 70, SOLAR_CYAN, 0, Fill, SOLAR_PALEGREEN, 3);
-	while(boolean){
-		//position;
-		getch(&KeyCode);
-		
-		//if (CoordinateX>=630 && CoordinateX<=150) break;
-		switch(KeyCode.ScanCode){
-			//DrawRectangle(*pGraph, &DrawingBoard, CoordinateX, CoordinateY, CoordinateX+20, CoordinateY+20, SOLAR_WHITE, 0, Fill, SOLAR_BLACK, 3);
-			case SCAN_RIGHT:
-				//condition for boundary
-				//if (CoordinateX>=630) break;
-				
-				//condition for boundary 
-				if (CoordinateX >= (COLOR_BOARD_X1 + 24*COLOR_BLOCK_EDGE)) { //CoordinateX >=530 [530=COLOR_BOARD_X1+(25-1)*COLOR_BLOCK_EDGE]
-					DrawRectangle(*pGraph, &DrawingBoard, CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_BLACK, 3);  //
-					PrintString(*pGraph, &DrawingBoard, 5, 5, SOLAR_WHITE, L"X1= %d, Y1 = %d", CoordinateX, CoordinateY); //test for last coordination
-					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-					CoordinateX=COLOR_BOARD_X1;
-					DrawRectangle(*pGraph, &DrawingBoard, CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_BLACK, 3);  //try
-					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-					break;
-					}
-					
-				else{
-					//reset first cursor
-					DrawRectangle(*pGraph, &DrawingBoard, CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_BLACK, 3);  //try
-					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-					//buttom action
-					CoordinateX+=COLOR_BLOCK_EDGE;
-					DrawRectangle(*pGraph, &DrawingBoard,CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_BLACK, 3);
-					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-					break;
-				}
-				
-				/****
-				//condition for boundary
-				if (CoordinateX>=480) {CoordinateX=50;}//if (CoordinateX>=630) {CoordinateX=150; CoordinateX-=20;}
-				//reset first cursor
-				//DrawRectangle(*pGraph,  &DrawingBoard, CoordinateX, CoordinateY, CoordinateX+20, CoordinateY+20, SOLAR_WHITE, 0, Fill, SOLAR_BLACK, 3);  //try
-				//Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0);
-				//buttom action
-				CoordinateX+=20;
-				DrawRectangle(*pGraph,  &DrawingBoard,CoordinateX, CoordinateY, CoordinateX+20, CoordinateY+20, SOLAR_CYAN, 0, Fill, SOLAR_PALEGREEN, 3); //try
-				//DrawRectangle(*pGraph,  &DrawingBoard,CoordinateX, CoordinateY, CoordinateX+20, CoordinateY+20, SOLAR_RED, 0, Fill, SOLAR_BLACK, 3);
-				Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0);
-				break;
-				
-				case NULL:
-					DrawingBoard=&Back;
-					Status=(*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0);
-					break;
-				****/
-			case SCAN_LEFT:
-				//condition for boundary
-				if (CoordinateX<=COLOR_BOARD_X1) {
-					DrawRectangle(*pGraph, &DrawingBoard,CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE,CoordinateY+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_BLACK, 3);  //try
-					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-					CoordinateX = (COLOR_BOARD_X1 + 24*COLOR_BLOCK_EDGE); //CoordinateX=530;
-					DrawRectangle(*pGraph, &DrawingBoard, CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_BLACK, 3);  //try
-					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-					break;
-					}
-					
-				else{
-					//reset first cursor
-					DrawRectangle(*pGraph, &DrawingBoard, CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_BLACK, 3);  //try
-					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-					//buttom action
-					CoordinateX-=COLOR_BLOCK_EDGE;
-					DrawRectangle(*pGraph, &DrawingBoard,CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_BLACK, 3);
-					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-					break;
-				}
-
-
-			case SCAN_DOWN:
-				//condition for boundary
-				if (CoordinateY >= (COLOR_BOARD_Y1 + 24*COLOR_BLOCK_EDGE)) {
-					DrawRectangle(*pGraph, &DrawingBoard, CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_BLACK, 3);  //try
-					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-					CoordinateY = COLOR_BOARD_Y1;
-					DrawRectangle(*pGraph, &DrawingBoard, CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_BLACK, 3);  //try
-					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-					break;
-					}
-					
-				else{
-					//reset first cursor
-					DrawRectangle(*pGraph, &DrawingBoard, CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_BLACK, 3);  //try
-					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-					//buttom action
-					CoordinateY+=COLOR_BLOCK_EDGE;
-					DrawRectangle(*pGraph, &DrawingBoard,CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_BLACK, 3);
-					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-					break;
-				}
-
-			
-			case SCAN_UP:
-				//condition for boundary
-				if (CoordinateY <= COLOR_BOARD_Y1) {
-					DrawRectangle(*pGraph, &DrawingBoard, CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_BLACK, 3);  //try
-					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-					CoordinateY = (COLOR_BOARD_Y1 + 24*COLOR_BLOCK_EDGE);
-					DrawRectangle(*pGraph, &DrawingBoard, CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_BLACK, 3);  //try
-					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-					break;
-					}
-					
-				else{
-					//reset first cursor
-					DrawRectangle(*pGraph, &DrawingBoard, CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_BLACK, 3);  //try
-					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-					//buttom action
-					CoordinateY-=COLOR_BLOCK_EDGE;
-					DrawRectangle(*pGraph, &DrawingBoard,CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_BLACK, 3);
-					Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-					break;
-				}
-
-			case SCAN_ESC: //可以到時設一個詢問結束框 搭配ProgramDone的KeyCode一起完整結束
-				boolean = 0;
-				break;
-		}
-
-		switch (KeyCode.UnicodeChar)
-		{
-		case CHAR_SPACE:
-				DrawRectangle(*pGraph, &DrawingBoard, CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_BLACK, 3);  //try
-				Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-				DrawRectangle(*pGraph, &DrawingBoard, CoordinateX, CoordinateY, CoordinateX+COLOR_BLOCK_EDGE, CoordinateY+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_PALEGREEN, 3);
-				Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); 
-					break;
-		}
+		}				
 	}
 
 	/*
@@ -645,36 +512,13 @@ GraphicsSimpleDemo(
 		Image->Height,
 		0
 	);
-
-	getch(&KeyCode); //�D�{����ProgramDone�]���@��KeyCode�|�M�o�ӭ���(�Y���禡�񵲧�����  210121G
-	*/
-	
-	//getch(&KeyCode);
-	/*
-	//Test color block
-	EfiSetMem(Image->BltBuffer, Image->Width * Image->Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL), EFI_BLACK);
-	FillScreen(*pGraph, SOLAR_BLACK);
-	DrawRectangle(*pGraph, Image, 370, 250, 429, 349, SOLAR_WHITE, 0, UL_ObliqueLine, SOLAR_WHITE, 3);
-	Status = (*pGraph)->Blt(
-		*pGraph,
-		Image->BltBuffer,
-		EfiBltBufferToVideo,
-		0,
-		0,
-		0,
-		0,
-		Image->Width,
-		Image->Height,
-		0
-	);
-	//getch(&KeyCode);
 	*/
 
 
 	gBS->FreePool(Image->BltBuffer);
 	gBS->FreePool(DrawingBoard.BltBuffer);
 	gBS->FreePool(SelectBar.BltBuffer);
-	gBS->FreePool(TryBackGround.BltBuffer); //0423
+	//gBS->FreePool(TryBG.BltBuffer); //0423
 	//gBS->FreePool(AllviewBoard.BltBuffer);
 	
 
