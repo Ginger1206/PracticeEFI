@@ -48,6 +48,7 @@ Abstract:
 
 // Color Block related definition
 #define COLOR_BLOCK_EDGE                     20 // = COLOR_BLOCK_WIDTH = COLOR_BLOCK_HEIGHT 此非固定的應該要COLOR_BOARD_WIDTH除畫的行數
+#define SELECT_STARTX_WIDTH                  30
 
 //Macro definition
 #define PUT_COLOR_CHECK(Sn)                  BlockActive(pGraph, DesktopImage, ColorBlockImage, ColorBlock, Sn, ColorCheck);    
@@ -57,9 +58,12 @@ Abstract:
 #define CHAR_HTab                            0x0009
 //#define CHAR_ENTER                           0x0013
 #define CHAR_SPACE                           0x0020
-#define CHAR_D                               0x0064
-#define CHAR_F                               0x0066
-#define CHAR_R                               0x0072
+#define CHAR_D                               0x0044
+#define CHAR_d                               0x0064
+#define CHAR_F                               0x0046
+#define CHAR_f                               0x0066
+#define CHAR_R                               0x0052
+#define CHAR_r                               0x0072
 
 typedef struct _CHESS_BLOCK_POSITION {
   UINT16 x;
