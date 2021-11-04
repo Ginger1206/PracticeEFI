@@ -97,7 +97,7 @@ FillRecursion(
 	UINT16 				b = 25 + (LY * COLOR_BLOCK_EDGE); //T
 
 	if( ! ( LX>=0 && LX<25 && LY>=0 && LY<25) ) return SOLAR_SUCCESS;
-	if(Locate[LX][LY] != DesireColor) return SOLAR_SUCCESS; //if(Locate[LX][LY]==DesireColor) 
+	if(Locate[LX][LY] != DesireColor) return SOLAR_SUCCESS; 
 	if(Locate[LX][LY] == NewColor) return SOLAR_SUCCESS;
 	DrawRectangle(pGraphOutput, &Image, a, b, a+COLOR_BLOCK_EDGE, b+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, NewColor, 3); //T 
 	Locate[LX][LY] = NewColor;
@@ -236,45 +236,44 @@ GraphicsSimpleDemo(
 	//UINT32				BoundaryNewColor = 0;
 	UINT32				DesireColor = 0;
 	UINT32				SelectedColor=SOLAR_PALEGREEN;//SelectedColor=0
-	//UINT16				SelX=30,SelY=20;
 	
 	SOLAR_IMAGE_INPUT	DescripBar;
 	SOLAR_IMAGE_INPUT	DrawingBoard; 
 	SOLAR_IMAGE_INPUT	PaletteBar; 
-	//SOLAR_IMAGE_INPUT	AllviewBoard;//for reset
+	SOLAR_IMAGE_INPUT	AllviewBoard;//for reset
 
 	DescripBar.BltBuffer=(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)NULL;
-	DescripBar.Width=170;
-	DescripBar.Height=600;
+	DescripBar.Width=200; //170
+	DescripBar.Height=400; //530 500
 
 	DrawingBoard.BltBuffer=(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)NULL; 
-	DrawingBoard.Width=630; 
+	DrawingBoard.Width=600; //630
 	DrawingBoard.Height=530; 
 
 	PaletteBar.BltBuffer=(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)NULL;
-	PaletteBar.Width=630;
+	PaletteBar.Width=600; //630
 	PaletteBar.Height=70;
-/*
-	AllviewBoard.BltBuffer=(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)NULL;
-	AllviewBoard.Width=630;
-	AllviewBoard.Height=550;
-*/
+
+	AllviewBoard.BltBuffer=(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)NULL;//wait
+	AllviewBoard.Width=200;//170
+	AllviewBoard.Height=200;//100
+
 	if ((DescripBar.BltBuffer = (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) EfiLibAllocatePool(DescripBar.Width * DescripBar.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL)))==NULL){
 		return EFI_OUT_OF_RESOURCES;
 	}
 
 	if ((DrawingBoard.BltBuffer = (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) EfiLibAllocatePool(DrawingBoard.Width * DrawingBoard.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL)))==NULL){
 		return EFI_OUT_OF_RESOURCES;
-	} //
+	} 
 
 	if((PaletteBar.BltBuffer = (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) EfiLibAllocatePool(PaletteBar.Width * PaletteBar.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL)))==NULL){
 		return EFI_OUT_OF_RESOURCES;
 	}
-/*
+
 	if((AllviewBoard.BltBuffer = (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) EfiLibAllocatePool(AllviewBoard.Width * AllviewBoard.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL)))==NULL){
 		return EFI_OUT_OF_RESOURCES;
 	}
-*/
+
 	//UINTN         BmpWidth;
 	//UINTN         BmpHeight;
 
@@ -286,23 +285,30 @@ GraphicsSimpleDemo(
 
 	EfiSetMem(Image->BltBuffer, Image->Width * Image->Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL), EFI_BLACK);
 	FillScreen(*pGraph, SOLAR_BLACK);
-	PrintString(*pGraph, Image, 150, 290, SOLAR_WHITE, L"The Graphics Demo Solar System. Width = %d, Height = %d", Image->Width, Image->Height); 
+	PrintString(*pGraph, Image, 150, 290, SOLAR_WHITE, L"The Graphics Draw Game. Width = %d, Height = %d", Image->Width, Image->Height); 
 	Status = (*pGraph)->Blt(*pGraph, Image->BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, Image->Width, Image->Height, 0);
 	getch(&KeyCode);
 
 
 
 	//Blt Try
+	//AllviewBoard
+	EfiSetMem(AllviewBoard.BltBuffer, AllviewBoard.Height * AllviewBoard.Width * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL),0);
+	FillScreen(*pGraph, SOLAR_YELLOW);//SOLAR_BLACK
+	//DrawRectangle(*pGraph, &AllviewBoard, 0, 20, COLOR_BLOCK_EDGE, 20+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_DEEPPINK, 3); 
+	DrawRectangle(*pGraph, &AllviewBoard, 0, 0, 176, 176, SOLAR_WHITE, 0, Fill, 0, 3); //25+6*25=175  0, 0, 175, 175,
+	//PrintString(*pGraph, &AllviewBoard, 0, 0, SOLAR_WHITE, L"Allview Test"); 
+	
 	//PaletteBar
-	EfiSetMem(PaletteBar.BltBuffer, PaletteBar.Height*PaletteBar.Width*sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL),EFI_BLACK);
-	FillScreen(*pGraph, SOLAR_BLACK);
+	EfiSetMem(PaletteBar.BltBuffer, PaletteBar.Height * PaletteBar.Width * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL),EFI_BLACK);
+	FillScreen(*pGraph, SOLAR_YELLOW);//SOLAR_BLACK
 	DrawRectangle(*pGraph, &PaletteBar,  30, 20,  30+COLOR_BLOCK_EDGE, 20+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_YELLOW, 3); 
 	DrawRectangle(*pGraph, &PaletteBar,  60, 20,  60+COLOR_BLOCK_EDGE, 20+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_RED, 3); 
 	DrawRectangle(*pGraph, &PaletteBar,  90, 20,  90+COLOR_BLOCK_EDGE, 20+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_BLUE, 3); 
 	DrawRectangle(*pGraph, &PaletteBar, 120, 20, 120+COLOR_BLOCK_EDGE, 20+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_GREEN, 3); 
 	DrawRectangle(*pGraph, &PaletteBar, 150, 20, 150+COLOR_BLOCK_EDGE, 20+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_FLORALW, 3);
 	PrintString(*pGraph, &PaletteBar, 250,  25, SOLAR_WHITE, L"Please type HEX RGB color(6): "); //or 用判斷限制只能打六位數字
-	PrintString(*pGraph, &PaletteBar, 430,  5, SOLAR_WHITE,L" Now COLOR :"); // 400,  5, SOLAR_WHITE,L" BOUNDARY COLOR:"
+	PrintString(*pGraph, &PaletteBar, 425,  5, SOLAR_WHITE,L" NOW COLOR :"); // 400,  5, SOLAR_WHITE,L" BOUNDARY COLOR:"
 	DrawRectangle(*pGraph, &PaletteBar, 530, 0, 530+COLOR_BLOCK_EDGE, 0+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SelectedColor, 3);  
 				
 	//Select function Bar(之後可以跟畫框一起Show出來先把Function做好)
@@ -318,9 +324,10 @@ GraphicsSimpleDemo(
 	EfiSetMem(DrawingBoard.BltBuffer, DrawingBoard.Width * DrawingBoard.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL), EFI_GREEN);
 	FillScreen(*pGraph, SOLAR_BLACK); //SOLAR_YELLOW
 	
+	Status = (*pGraph)->Blt(*pGraph, AllviewBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 600, 400, AllviewBoard.Width, AllviewBoard.Height, 0);  // 0, 0, 630, 530,
 	Status = (*pGraph)->Blt(*pGraph, PaletteBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, PaletteBar.Width, PaletteBar.Height, 0); //跳視窗變成最上層0, 0, 0, 30
-	Status = (*pGraph)->Blt(*pGraph, DescripBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 630, 0, DescripBar.Width, DescripBar.Height, 0); //Select Bar
-	Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); //先畫背景
+	Status = (*pGraph)->Blt(*pGraph, DescripBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 600, 0, DescripBar.Width, DescripBar.Height, 0); // 0, 0, 630, 0
+	//Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); //先畫背景
 
 	for (UINT16 i = 0; i < 26; i++) {
 		DrawHorizontalLine(*pGraph, &DrawingBoard, CoordinateX, CoordinateY + i * COLOR_BLOCK_EDGE, COLOR_BOARD_WIDTH, SOLAR_WHITE, FullLine); 
@@ -426,7 +433,11 @@ GraphicsSimpleDemo(
 		//復原成上一個樣子
 		//case CHAR_R: 
 		//case CHAR_r:
-
+/*
+		//for test 
+		case CHAR_T:
+		case CHAR_t:
+*/
 		//倒色 SOLAR_DEEPPINK
 		case CHAR_F:
 		case CHAR_f: 
@@ -454,6 +465,20 @@ GraphicsSimpleDemo(
 		}	
 		Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); //T
 
+		//AllView Function
+		for(UINT16 j=0; j<25 ; j++)
+		{
+			for(UINT16 k=0; k<25 ; k++)
+			{
+				UINT16 CX=k+6*k+1;
+				UINT16 CY=j+6*j+1;
+				DrawRectangle(*pGraph, &AllviewBoard, CX, CY, CX+6, CY+6, 0, 0, Fill, Locate[k][j], 3);  
+				Status = (*pGraph)->Blt(*pGraph, AllviewBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 600, 400, AllviewBoard.Width, AllviewBoard.Height, 0);  //G
+				//getch(&KeyCode);
+			}
+		}
+
+
 	}
 
 	/*
@@ -464,14 +489,15 @@ GraphicsSimpleDemo(
 	DrawRectangle(*pGraph, Image, 261, 118, 294, 148, SOLAR_PALEGREEN, 0, Fill, SOLAR_PALEGREEN, 3); // (x1,y1,x2,y2)=(261,118,294,148)
 	DrawRectangle(*pGraph, Image, 360, 245, 393, 275, SOLAR_WHITE, 0, Fill, SOLAR_WHITE, 3); //(x1,y1,x2,y2)=(360,245,393,275)
 	Status = (*pGraph)->Blt(*pGraph, Image->BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, Image->Width, Image->Height, 0);
-	*/
-
+	
+	getch(&KeyCode);//跳太快惹想找Delay
+    */
 
 	gBS->FreePool(Image->BltBuffer);
 	gBS->FreePool(DrawingBoard.BltBuffer);
 	gBS->FreePool(DescripBar.BltBuffer);
 	gBS->FreePool(PaletteBar.BltBuffer); 
-	//gBS->FreePool(AllviewBoard.BltBuffer);
+	gBS->FreePool(AllviewBoard.BltBuffer);
 	
 
 	return SOLAR_SUCCESS;

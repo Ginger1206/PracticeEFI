@@ -67,6 +67,8 @@ Abstract:
 #define CHAR_q                               0x0071
 #define CHAR_R                               0x0052
 #define CHAR_r                               0x0072
+#define CHAR_T                               0x0054
+#define CHAR_t                               0x0074
 
 typedef struct _CHESS_BLOCK_POSITION {
   UINT16 x;
