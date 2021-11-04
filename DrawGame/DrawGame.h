@@ -12,8 +12,8 @@ Abstract:
 
 --*/
 
-#ifndef _OBSTRUCT_CHESS_H_
-#define _OBSTRUCT_CHESS_H_
+#ifndef _DRAW_FUNC_H_
+#define _DRAW_FUNC_H_
 
 #include "_DevelopAdditionSetup.h"
 
@@ -45,7 +45,7 @@ Abstract:
 #define COLOR_BOARD_HEIGH                    COLOR_BOARD_WIDTH
 #define COLOR_BOARD_X1                       50
 #define COLOR_BOARD_Y1                       25
-#define SELECT_X                             30
+#define SELECT_X_COORDINATE                  30
 
 // Color Block related definition
 #define COLOR_BLOCK_EDGE                     20 // = COLOR_BLOCK_WIDTH = COLOR_BLOCK_HEIGHT 此非固定的應該要COLOR_BOARD_WIDTH除畫的行數
@@ -100,6 +100,7 @@ enum ChessBlockStatus {
 typedef struct _COLOR_BLOCK_POSITION{
   UINT16 x;
   UINT16 y;
+  //UINT32 color;
 }COLOR_BLOCK_POSITION;
 
 typedef struct _COLOR_BLOCK_INFO{
@@ -125,5 +126,5 @@ enum ColorBlockStatus{ //未寫完
   Invalid
 };
 
-#endif //_OBSTRUCT_CHESS_H_
+#endif //_DRAW_FUNC_H_
 
