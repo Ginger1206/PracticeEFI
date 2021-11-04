@@ -34,42 +34,11 @@ extern "C" {
 
 //extern EFI_GRAPHICS_OUTPUT_BLT_PIXEL TransparentColor;
 EFI_GRAPHICS_OUTPUT_BLT_PIXEL TransparentColor; //型態問題D幫解，先把extern拿掉試試
-//extern UINT16                        ChessBlockEndColNum[CHESS_BOARD_CHECK_BLOCK_ROW_MAX_NUM];
-//UINT16                        ChessBlockEndColNum[CHESS_BOARD_CHECK_BLOCK_ROW_MAX_NUM];
-//UINT16                        ChessBlockEndColNum[21];
 UINT16						  ChessBlockAmount;
-//UINT16						  ColorBlockAmount;
 INT32				Locate[25][25];
 
 
 
-
-/*+++++
-//Function draw boundry
-	UINT16 x=CoordinateX;
-	UINT16 x1=x+COLOR_BLOCK_EDGE;
-	UINT16 y=CoordinateY;
-	UINT16 y1=y+COLOR_BLOCK_EDGE;
-	DrawRec(*Blt,x,y,x1,y2){
-		DrawLine(*pGraph, &TryBackGround, x, y, x1, y,SOLAR_RED,FullLine);
-		DrawLine(*pGraph, &TryBackGround, x1, y, x1, y1, SOLAR_RED,FullLine);
-		DrawLine(*pGraph, &TryBackGround, x1, y1, x, y1, SOLAR_RED,FullLine);
-		DrawLine(*pGraph, &TryBackGround, x, y1, x, y, SOLAR_RED,FullLine);
-	}
-	DrawRec(x,y,x1,y2);
-
-	DrawRec(*pGraph,image,x,y,x+W,y+W){
-		DrawLine(p,&i,   x,   y, x+W,   y,red,FL);
-		DrawLine(p,&i, x+W,   y, x+W, y+W,red,FL);
-		DrawLine(p,&i, x+W, y+W,   x, y+W,red,FL);
-		DrawLine(p,&i,   x, y+W,   x,   y,red,FL);
-	}
-
-
-	DelBoundry(*pGraph,image,x,y,x+W,y+W){
-		DrawLine(p,&i,)
-	}
------*/
 SOLAR_STATUS
 SOLAR_LIB
 RecBoundary (
@@ -124,14 +93,12 @@ MovDelBdy(
   )
 {
 	EFI_STATUS    		  Status;
-	UINT16 x2=X+COLOR_BLOCK_EDGE; //maybe還要多加最大邊界限制範圍
+	UINT16 x2=X+COLOR_BLOCK_EDGE; 
 	UINT16 y2=Y+COLOR_BLOCK_EDGE;
 
 	switch (ScanCode)
 	{
 	case SCAN_UP:
-	//if(Y<=COLOR_BOARD_Y1) Y=COLOR_BOARD_Y1+24*COLOR_BLOCK_EDGE;
-		//DrawLine( pGraphOutput, &Image,   X,   Y,  x2,   Y, SOLAR_WHITE, FullLine); //上移
 		DrawLine( pGraphOutput, &Image,  x2,   Y,  x2,  y2, SOLAR_WHITE, FullLine); //右移
 		DrawLine( pGraphOutput, &Image,  x2,  y2,   X,  y2, SOLAR_WHITE, FullLine); //下移
 		DrawLine( pGraphOutput, &Image,   X,  y2,   X,   Y, SOLAR_WHITE, FullLine); //左移
@@ -160,46 +127,7 @@ MovDelBdy(
 
 	return SOLAR_SUCCESS;
 }
-/*
-//recursion  line=g fill=p
-if(Locate[LX][LY]!=SOLAR_PALEGREEN) SOLAR_BLACK
-DrawRectangle(*pGraph, &TryBackGround, X, Y, X+COLOR_BLOCK_EDGE, Y+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_PALEGREEN, 3); 
-r(x,y,c)=>R(LX,LY)
-{
-	X=50+(LX*20);
-	Y=25+(LY*20);
-	if(Locate[LX][LY]!=SOLAR_PALEGREEN)
-		Draw New Color
-	R(LX+1,LY)
-	R(LX-1,LY)
-	R(LX,LY+1)
-	R(LX,LY-1)
-}
 
-//Example from others
-int image[10][10];  // 圖片的大小為 10x10
- 
-void flood(int x, int y, int new_color, int old_color)
-{
-    if (x>=0 && x<10 && y>=0 && y<10)   // 不能超出邊界
-        if (image[x][y] == old_color)   // 同色方格才枚舉
-        {
-            // 染色
-            image[x][y] = new_color;
-            // 枚舉上下左右四個方向
-            flood(x+1, y, new_color, old_color);
-            flood(x-1, y, new_color, old_color);
-            flood(x, y+1, new_color, old_color);
-            flood(x, y-1, new_color, old_color);
-        }
-}
- 
-void ink()
-{
-    // 在座標(7,6)的方格，淋上1號顏色。
-    flood(7, 6, 1, image[7][6]);
-}
-*/
 
 SOLAR_STATUS
 SOLAR_LIB
@@ -218,7 +146,6 @@ FillRecurion(
 
 	if(!(LX>=0 && LX<25 && LY>=0 && LY <25))return SOLAR_SUCCESS;
 	if(Locate[LX][LY]!=DesireColor)return SOLAR_SUCCESS; //if(Locate[LX][LY]==DesireColor) 
-		
 	if(Locate[LX][LY]==NewColor)return SOLAR_SUCCESS;
 	DrawRectangle(pGraphOutput, &Image, a, b, a+COLOR_BLOCK_EDGE, b+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, NewColor, 3); 
 	Status=(pGraphOutput)->Blt(pGraphOutput,Image.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, Image.Width, Image.Height, 0);
@@ -231,6 +158,46 @@ FillRecurion(
 	
 	return SOLAR_SUCCESS;
 }
+
+/*
+SOLAR_STATUS
+SOLAR_LIB
+FillRecurion(
+  IN     EFI_GRAPHICS_OUTPUT_PROTOCOL *pGraphOutput,
+  IN OUT SOLAR_IMAGE_INPUT            Image,
+  IN     UINT16                       LX,
+  IN     UINT16                       LY,
+  IN     INT32						  NewColor,
+  IN	 INT32						  DesireColor
+  )
+{
+	EFI_STATUS    		Status;
+	UINT16 				a=50+(LX*COLOR_BLOCK_EDGE); 
+	UINT16 				b=25+(LY*COLOR_BLOCK_EDGE);
+
+	//if(!(LX>=0 && LX<25 && LY>=0 && LY <25))return SOLAR_SUCCESS;
+	//if(Locate[LX][LY]!=DesireColor)return SOLAR_SUCCESS; //if(Locate[LX][LY]==DesireColor) 
+	if(Locate[LX][LY]==NewColor)return SOLAR_SUCCESS;
+	DrawRectangle(pGraphOutput, &Image, a, b, a+COLOR_BLOCK_EDGE, b+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, NewColor, 3); 
+	Status=(pGraphOutput)->Blt(pGraphOutput,Image.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, Image.Width, Image.Height, 0);
+	Locate[LX][LY]=NewColor;
+
+	INT16 s[4]={1,-1,0,0};//1U,65535U,0U,0U
+	INT16 w[4]={0,0,1,-1};
+	for(INT16 i=0;i<4;i++)
+	{
+		//
+		if(!(LX+s[i]>=0 && LX+s[i]<25 && LY+w[i]>=0 &&LY+w[i] <25))continue;
+		if(Locate[LX+s[i]][LY+w[i]]==DesireColor)
+		{
+			return FillRecurion(pGraphOutput,Image,LX+s[i],LY+w[i],NewColor,DesireColor);
+		}
+		
+	}
+	
+	return SOLAR_SUCCESS;
+}
+*/
 
 SOLAR_STATUS
 SOLAR_API
@@ -280,9 +247,6 @@ GraphicsSimpleDemo(
 	SOLAR_IMAGE_INPUT	SelectBar;
 	SOLAR_IMAGE_INPUT	TryBackGround; 
 	//SOLAR_IMAGE_INPUT	AllviewBoard;//for reset
-	
-
-				
 
 	DrawingBoard.BltBuffer=(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)NULL;
 	DrawingBoard.Width=630;
@@ -357,8 +321,6 @@ GraphicsSimpleDemo(
 	}
 
 	RecBoundary(*pGraph,TryBackGround,CoordinateX,CoordinateY);
-
-	//getch(&KeyCode);
 
 	UINT16 loop=1;
 	while(loop){
@@ -465,7 +427,7 @@ GraphicsSimpleDemo(
 					}
 				}
 				break;
-		//case CHAR_BackSpace: //復原成上一個樣子
+		//case CHAR_R: //復原成上一個樣子
 		case CHAR_F: //倒色 SOLAR_DEEPPINK
 				LX=(X-COLOR_BOARD_X1)/COLOR_BLOCK_EDGE;
 				LY=(Y-COLOR_BOARD_Y1)/COLOR_BLOCK_EDGE;
@@ -740,7 +702,6 @@ DrawGame(
 	EFI_GRAPHICS_OUTPUT_PROTOCOL  *pGraph;
 	SOLAR_IMAGE_INPUT             DesktopImage;
 	UINT32                        ModeNum;
-	//CHESS_BLOCK_INFO              *ChessBlock;
 	COLOR_BLOCK_INFO			  *ColorBlock;
 	
 	
