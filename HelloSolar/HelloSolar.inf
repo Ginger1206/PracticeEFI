@@ -1,0 +1,44 @@
+#/*++
+#
+#  Module Name:
+#
+#    HelloSolar.inf
+#
+#  Abstract:
+#
+#    A hello demo module for EFI shell.
+#
+#--*/
+
+[defines]
+BASE_NAME            = HelloSolar
+FILE_GUID            = 97bcbeda-a586-405c-bcc7-58f5c2153a89
+COMPONENT_TYPE       = APPLICATION
+
+[sources.common]
+  HelloSolar.c
+
+[includes.common]
+  .
+# EDK common include.
+  $(EDK_SOURCE)\Foundation
+  $(EDK_SOURCE)\Foundation\Efi
+  $(EDK_SOURCE)\Foundation\Efi\Include
+  $(EDK_SOURCE)\Foundation\Framework
+  $(EDK_SOURCE)\Foundation\Framework\Include
+  $(EDK_SOURCE)\Foundation\Include
+  $(EDK_SOURCE)\Foundation\Library\Dxe\Include
+  
+#SOLAR common include
+  $(SOLAR_SDK_SOURCE)\Common\Include
+  $(SOLAR_SDK_SOURCE)\Common\Library\Include
+  $(SOLAR_SDK_SOURCE)\Common\Include\EdkReplace\Foundation\Include
+
+[libraries.common]
+  EfiDriverLib
+  SolarConsoleLib
+
+[nmake.common]
+  C_STD_INCLUDE=
+  IMAGE_ENTRY_POINT=HelloSolar
+

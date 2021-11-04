@@ -1,0 +1,57 @@
+#/*++
+#
+#  Module Name:
+#
+#    Newbasic.inf
+#
+#  Abstract:
+#
+#    A basic demo module for EFI shell. 210319G
+#
+#--*/
+[defines]
+BASE_NAME			= Newbasic
+FILE_GUID			= fcaf8c23-71fe-4cb5-a14b-a87813761804
+COMPONENT_TYPE		= APPLICATION
+
+[sources.common]
+Newbasic.c
+DrawFunc.c
+..\_DevelopAddition\_Debug.c
+
+[includes.common]
+  .
+# EDK common include.
+  $(EDK_SOURCE)\Foundation
+  $(EDK_SOURCE)\Foundation\Efi
+  $(EDK_SOURCE)\Foundation\Efi\Include
+  $(EDK_SOURCE)\Foundation\Framework
+  $(EDK_SOURCE)\Foundation\Framework\Include
+  $(EDK_SOURCE)\Foundation\Include
+  $(EDK_SOURCE)\Foundation\Library\Dxe\Include
+  $(EDK_SOURCE)\Foundation\Efi\Protocol\PciRootBridgeIo 
+  
+# Solar-System common include.
+  $(SOLAR_SDK_SOURCE)\Common\Include
+  $(SOLAR_SDK_SOURCE)\Common\Include\EdkReplace\Foundation\Include
+  $(SOLAR_SDK_SOURCE)\Common\Library\Include
+  $(SOLAR_SDK_SOURCE)\Common\Library\Compatibility\Include 
+#Ginger20211101 - starts
+  $(SOLAR_SDK_SOURCE)\Common\Library\Compatibility\CLib
+#Ginger20211101 - ends
+
+[libraries.common]
+  EfiDriverLib
+  SolarConsoleLib
+  SolarGraphicsLib
+  SolarCppLib
+[libraries.ia32]
+
+[libraries.x64]
+
+[nmake.common]
+  #C_STD_INCLUDE=
+  IMAGE_ENTRY_POINT=Newbasic
+  
+  C_STD_FLAGS = $(C_STD_FLAGS) /TP
+  

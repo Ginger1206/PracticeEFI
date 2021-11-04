@@ -1,0 +1,46 @@
+#/*++
+#
+#  Module Name:
+#
+#    TestSolarLib.inf
+#
+#  Abstract:
+#
+#    This is a test environment of Solar libraries.
+#
+#--*/
+
+[defines]
+BASE_NAME            = TestSolarLib
+FILE_GUID            = 97bcbeda-a586-405c-bcc7-58f5c2153a89
+COMPONENT_TYPE       = APPLICATION
+
+[sources.common]
+  TestSolarLib.c
+
+[includes.common]
+  .
+# Solar-System common include.
+  $(SOLAR_SDK_SOURCE)\Common\Include
+  $(SOLAR_SDK_SOURCE)\Common\Library\Include
+# EDK common include.
+  $(EDK_SOURCE)\Foundation
+  $(EDK_SOURCE)\Foundation\Efi
+  $(EDK_SOURCE)\Foundation\Efi\Include
+  $(EDK_SOURCE)\Foundation\Framework
+  $(EDK_SOURCE)\Foundation\Framework\Include
+  $(EDK_SOURCE)\Foundation\Include
+  $(EDK_SOURCE)\Foundation\Library\Dxe\Include
+
+[libraries.common]
+  EfiDriverLib
+  SolarConsoleLib
+  
+[libraries.ia32]
+
+[libraries.x64]
+
+[nmake.common]
+  C_STD_INCLUDE=
+  IMAGE_ENTRY_POINT=TestSolarLib
+

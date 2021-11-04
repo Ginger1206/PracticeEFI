@@ -1,0 +1,41 @@
+#/*++
+#
+#  Module Name:
+#
+#    ConsoleControl.inf
+#
+#  Abstract:
+#
+#    This is the ConsoleControl switch utility.
+#
+#--*/
+
+[defines]
+BASE_NAME            = ConsoleControl
+FILE_GUID            = FADA81C0-DC30-4266-B8D2-828FB0F5EDFA
+COMPONENT_TYPE       = APPLICATION
+
+[sources.common]
+  ConsoleControl.c
+  
+[includes.common]
+  .
+# EDK common include.
+  $(EDK_SOURCE)\Foundation
+  $(EDK_SOURCE)\Foundation\Efi
+  $(EDK_SOURCE)\Foundation\Efi\Include
+  $(EDK_SOURCE)\Foundation\Framework
+  $(EDK_SOURCE)\Foundation\Framework\Include
+  $(EDK_SOURCE)\Foundation\Include
+  $(EDK_SOURCE)\Foundation\Library\Dxe\Include
+  $(EDK_SOURCE)\Foundation\Efi\Protocol\PciRootBridgeIo
+
+[libraries.common]
+  EfiDriverLib
+  
+[libraries.ia32]
+
+[libraries.x64]
+
+[nmake.common]
+  IMAGE_ENTRY_POINT=ConsoleControl

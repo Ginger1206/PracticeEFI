@@ -1,0 +1,67 @@
+#/*++
+#
+#  Module Name:
+#
+#    PcTools.inf
+#
+#  Abstract:
+#
+#    This is an integrated system utility for IBM compatible PC.
+#
+#--*/
+
+[defines]
+BASE_NAME            = PcTools
+FILE_GUID            = 813D81A3-883A-410b-B2B5-A52B4E19AD65
+COMPONENT_TYPE       = APPLICATION
+
+[sources.common]
+  PcTools.c
+  Pci.c
+  PciClass.c
+  ..\_DevelopAddition\_Debug.c
+  
+[sources.Ia32]
+  Ia32\Processor.h
+
+[sources.Ipf]
+  Ipf\Processor.h
+
+[sources.x64]
+  x64\Processor.h
+
+[includes.common]
+  .
+# Solar-System common include.
+  $(SOLAR_SDK_SOURCE)\Common\Include
+  $(SOLAR_SDK_SOURCE)\Common\Include\EdkReplace\Foundation\Include
+  $(SOLAR_SDK_SOURCE)\Common\Library\Include
+# EDK common include.
+  $(EDK_SOURCE)\Foundation
+  $(EDK_SOURCE)\Foundation\Efi
+  $(EDK_SOURCE)\Foundation\Efi\Include
+  $(EDK_SOURCE)\Foundation\Framework
+  $(EDK_SOURCE)\Foundation\Framework\Include
+  $(EDK_SOURCE)\Foundation\Include
+  $(EDK_SOURCE)\Foundation\Library\Dxe\Include
+  $(EDK_SOURCE)\Foundation\Efi\Protocol\PciRootBridgeIo
+# For Insyde-Tiano codebase include addition below. (If you will make this program on the code base of Insyde-Tiano demo system, please remove the '#' sign.)
+#  $(EFI_SOURCE)
+#  $(EFI_SOURCE)\Include
+#  $(EFI_SOURCE)\Include\Dxe
+#  $(EFI_SOURCE)\Library\Dxe\Include
+#  $(EFI_SOURCE)\Guid\Dxe
+
+[libraries.common]
+  EfiDriverLib
+  SolarCppLib
+  SolarConsoleLib
+  
+[libraries.ia32]
+
+[libraries.x64]
+
+[nmake.common]
+  IMAGE_ENTRY_POINT=PcTools
+# Add /TP to compile it as CPP file
+  C_STD_FLAGS = $(C_STD_FLAGS) /TP

@@ -1,0 +1,48 @@
+#/*++
+#
+#  Module Name:
+#
+#    Hello123.inf
+#
+#  Abstract:
+#
+#    A hello demo module for EFI shell.
+#
+#--*/
+
+[defines]
+BASE_NAME            = Try1123
+FILE_GUID            = d1f3e1c4-c9b8-46b3-917a-6a43d675f28b
+COMPONENT_TYPE       = APPLICATION
+
+[sources.common]
+  Try1123.c
+
+[includes.common]
+  .
+# EDK common include.
+  $(EDK_SOURCE)\Foundation
+  $(EDK_SOURCE)\Foundation\Efi
+  $(EDK_SOURCE)\Foundation\Efi\Include
+  $(EDK_SOURCE)\Foundation\Framework
+  $(EDK_SOURCE)\Foundation\Framework\Include
+  $(EDK_SOURCE)\Foundation\Include
+  $(EDK_SOURCE)\Foundation\Library\Dxe\Include
+  
+# Solar-System common include.
+  $(SOLAR_SDK_SOURCE)\Common\Include
+  $(SOLAR_SDK_SOURCE)\Common\Library\Include
+  $(SOLAR_SDK_SOURCE)\Common\Include\EdkReplace\Foundation\Include
+
+[libraries.common]
+  EfiDriverLib
+  SolarConsoleLib
+  SolarGraphicsLib
+  SolarCppLib
+
+[nmake.common]
+  C_STD_INCLUDE=
+  IMAGE_ENTRY_POINT=Try1123
+  #
+  # C_STD_FLAGS = $(C_STD_FLAGS) /TP
+

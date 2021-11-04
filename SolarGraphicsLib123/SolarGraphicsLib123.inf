@@ -1,0 +1,60 @@
+#/*++
+#
+#  Module Name:
+#
+#    SolarGraphicsLibDemo.inf
+#
+#  Abstract:
+#
+#    This is the demo application program for SolarGraphicsLib.
+#
+#--*/
+
+[defines]
+BASE_NAME            = SolarGraphicsLib123
+FILE_GUID            = f002b20c-0ee1-425a-ae09-f57dec2b3eb0
+COMPONENT_TYPE       = APPLICATION
+
+[sources.common]
+  SolarGraphicsLib123.c
+  ImageBlock.c
+
+  ..\_DevelopAddition\_Debug.c
+  
+[includes.common]
+  .
+# Solar-System common include.
+  $(SOLAR_SDK_SOURCE)\Common\Include
+  $(SOLAR_SDK_SOURCE)\Common\Include\EdkReplace\Foundation\Include
+  $(SOLAR_SDK_SOURCE)\Common\Library\Include
+# EDK common include.
+  $(EDK_SOURCE)\Foundation
+  $(EDK_SOURCE)\Foundation\Efi
+  $(EDK_SOURCE)\Foundation\Efi\Include
+  $(EDK_SOURCE)\Foundation\Framework
+  $(EDK_SOURCE)\Foundation\Framework\Include
+  $(EDK_SOURCE)\Foundation\Include
+  $(EDK_SOURCE)\Foundation\Library\Dxe\Include
+#  $(EDK_SOURCE)\Foundation\Efi\Protocol\PciRootBridgeIo
+# For Insyde-Tiano codebase include addition below. (If you will make this program on the code base of Insyde-Tiano demo system, please remove the '#' sign.)
+#  $(EFI_SOURCE)
+#  $(EFI_SOURCE)\Include
+#  $(EFI_SOURCE)\Include\Dxe
+#  $(EFI_SOURCE)\Library\Dxe\Include
+#  $(EFI_SOURCE)\Guid\Dxe
+
+[libraries.common]
+  EfiDriverLib
+  SolarCppLib
+  SolarConsoleLib
+  SolarGraphicsLib
+  
+[libraries.ia32]
+
+[libraries.x64]
+
+[nmake.common]
+  IMAGE_ENTRY_POINT=SolarGraphicsLib123
+# Add /TP to compile it as CPP file
+  C_STD_FLAGS = $(C_STD_FLAGS) /TP
+# C_STD_FLAGS = 
