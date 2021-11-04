@@ -4,11 +4,11 @@ Copyright (c) 2008 - 2010, Solar Studio
          
 Module Name:
 
-  ImageBlock.c
+  DrawFunc.c
 
 Abstract:
 
-  This is an EFI-shell game program that calls ObstructChess.
+  This is an EFI-shell game program that calls DraFunc.
 
 --*/
 
@@ -25,6 +25,7 @@ extern "C" {
 #ifdef __DEBUG__
   #include "../_DevelopAddition/_Debug.h"
 #endif
+#include "DrawFunc.h"
 
 VOID *
 memcpy (
@@ -41,4 +42,24 @@ memcpy (
   }
 
   return Dest;
+}
+
+
+
+int atoi(char* str)
+{
+    // Initialize result
+    int res = 0;
+ 
+    // Iterate through all characters
+    // of input string and update result
+    // take ASCII character of corresponding digit and
+    // subtract the code from '0' to get numerical
+    // value and multiply res by 10 to shuffle
+    // digits left to update running total
+    for (int i = 0; str[i] != '\0'; ++i)
+        res = res * 10 + str[i] - '0';
+ 
+    // return result.
+    return res;
 }

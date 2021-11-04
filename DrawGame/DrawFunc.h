@@ -4,11 +4,11 @@ Copyright (c) 2008 - 2010, Solar Studio
          
 Module Name:
 
-  DrawGame.h
+  DrawFunc.h
 
 Abstract:
 
-  This is an EFI-shell game program that calls DrawGame.
+  This is an EFI-shell game program that calls DrawFunc.
 
 --*/
 
@@ -20,6 +20,8 @@ memcpy (
   OUT VOID        *Dest,
   IN  const VOID  *Src,
   IN  UINTN       Count
-  )
+  );
+
+int atoi(char* str);
 
 #endif //_DRAW_FUNC_H
