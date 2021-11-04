@@ -121,13 +121,14 @@ DrawRectangle(*pGraph, &PaletteBar, 150, 20, 150+COLOR_BLOCK_EDGE, 20+COLOR_BLOC
 Status = (*pGraph)->Blt(*pGraph,PaletteBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, PaletteBar.Width, PaletteBar.Height, 0); 
 DrawBoundary(*pGraph, DrawingBoard, X, Y, COLOR_BLOCK_EDGE, SOLAR_WHITE);
 */
-SOLAR_STATUS
+SOLAR_SYSRET
 SOLAR_LIB
 SelectShow(
   IN     EFI_GRAPHICS_OUTPUT_PROTOCOL *pGraphOutput,
   IN OUT SOLAR_IMAGE_INPUT            Image, 
   IN     UINT16						  SelectX,
   IN 	 EFI_INPUT_KEY				  Tkey
+  //IN OUT INT32						  SColor
 )
 {
 	/*
@@ -135,8 +136,22 @@ SelectShow(
 	INT32 				  ChoiseColor[num][fillc]={ { 30, SOLAR_YELLOW},{ 60, SOLAR_RED},{ 90, SOLAR_BLUE},{120, SOLAR_GREEN},{150, SOLAR_WHITE} };
 	PrintString(pGraphOutput, &Image, 0,  0, SOLAR_WHITE,L" ArrayX: %d , ArrayY: %d ", num, fillc);// L" ArrayX: %d , ArrayY: %d ", num, fillc   L" Tesss "
 	Status = (pGraphOutput)->Blt(pGraphOutput, Image.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, Image.Width, Image.Height, 0);
+	
+	struct SelCol
+	{
+		INT32 PositionX;
+		INT32 ChColr;
+	};
+	
+	UINT32 *S30=SOLAR_YELLOW;//0514
+	UINT32 *S60=SOLAR_RED;
+	UINT32 *S90=SOLAR_BLUE;
+	UINT32 *S120=SOLAR_GREEN;
+	UINT32 *S150=SOLAR_WHITE;
 	*/
 	EFI_STATUS    		Status;
+	UINT32			    SColor=000000;
+
 	UINT16 loop=1;
 	while(loop)
 	{
@@ -162,14 +177,22 @@ SelectShow(
 			break;
 
 		}
+		//PrintString(pGraphOutput, &Image, 100,  0, SOLAR_WHITE,L" Get X position :%d", SelectX);// L" ArrayX: %d , ArrayY: %d ", num, fillc   L" Tesss "
 		Status = (pGraphOutput)->Blt(pGraphOutput, Image.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, Image.Width, Image.Height, 0);
 
 		switch (Tkey.UnicodeChar)
 		{
 		case CHAR_CARRIAGE_RETURN :
-			PrintString(pGraphOutput, &Image, 0, 0, SOLAR_WHITE, L" ENTER ");
+			//PrintString(pGraphOutput, &Image, 0, 0, SOLAR_WHITE, L" ENTER ");//for test
 			MakeThickLine(pGraphOutput, Image, SelectX, SOLAR_BLACK);
 			//get color and change
+			//PrintString(pGraphOutput, &Image, 100,  0, SOLAR_WHITE,L" Get X position :%d", SelectX);// L" ArrayX: %d , ArrayY: %d ", num, fillc   L" Tesss "
+			Status = (pGraphOutput)->Blt(pGraphOutput, Image.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, Image.Width, Image.Height, 0);
+			if(SelectX==30) {SColor=SOLAR_YELLOW;}
+			if(SelectX==60) {SColor=SOLAR_RED;}
+			if(SelectX==90) {SColor=SOLAR_BLUE;}
+			if(SelectX==120) {SColor=SOLAR_GREEN;}
+			if(SelectX==150) {SColor=SOLAR_FLORALW;}
 			loop=0;
 			break;
 
@@ -181,8 +204,8 @@ SelectShow(
 		}
 			
 	}
-
-	return SOLAR_SUCCESS;
+	return SColor;
+	//return SOLAR_SUCCESS;
 }
 
 SOLAR_STATUS
@@ -226,6 +249,7 @@ GraphicsSimpleDemo(
 	UINT16				X = CoordinateX, Y = CoordinateY;
 	UINT16              LX = 0, LY = 0; 
 	UINT32				DesireColor = 0;
+	UINT32				SelectedColor=SOLAR_PALEGREEN;//SelectedColor=0
 	//UINT16				SelX=30,SelY=20;
 	//EFI_SIMPLE_TEXT_IN_PROTOCOL     *cIn; //07G
   	//EFI_SIMPLE_TEXT_OUT_PROTOCOL    *cOut;//07G
@@ -294,9 +318,11 @@ GraphicsSimpleDemo(
 	DrawRectangle(*pGraph, &PaletteBar,  60, 20,  60+COLOR_BLOCK_EDGE, 20+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_RED, 3); 
 	DrawRectangle(*pGraph, &PaletteBar,  90, 20,  90+COLOR_BLOCK_EDGE, 20+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_BLUE, 3); 
 	DrawRectangle(*pGraph, &PaletteBar, 120, 20, 120+COLOR_BLOCK_EDGE, 20+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_GREEN, 3); 
-	DrawRectangle(*pGraph, &PaletteBar, 150, 20, 150+COLOR_BLOCK_EDGE, 20+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_WHITE, 3);
+	DrawRectangle(*pGraph, &PaletteBar, 150, 20, 150+COLOR_BLOCK_EDGE, 20+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_FLORALW, 3);
 	PrintString(*pGraph, &PaletteBar, 250,  25, SOLAR_WHITE, L"Please type HEX RGB color(6): "); //or 用判斷限制只能打六位數字
-
+	PrintString(*pGraph, &PaletteBar, 430,  5, SOLAR_WHITE,L" NOW COLOR:");
+	DrawRectangle(*pGraph, &PaletteBar, 530, 0, 530+COLOR_BLOCK_EDGE, 0+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SelectedColor, 3);  
+				
 	//Select function Bar(之後可以跟畫框一起Show出來先把Function做好)
 	EfiSetMem(DescripBar.BltBuffer, DescripBar.Width * DescripBar.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL), 0);
 	FillScreen(*pGraph, SOLAR_YELLOW);
@@ -310,7 +336,7 @@ GraphicsSimpleDemo(
 	EfiSetMem(DrawingBoard.BltBuffer, DrawingBoard.Width * DrawingBoard.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL), EFI_GREEN);
 	FillScreen(*pGraph, SOLAR_BLACK); //SOLAR_YELLOW
 	
-	Status = (*pGraph)->Blt(*pGraph, PaletteBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, PaletteBar.Width, PaletteBar.Height, 0); //COLOR_BOARD_X1, COLOR_BOARD_Y1,
+	Status = (*pGraph)->Blt(*pGraph, PaletteBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, PaletteBar.Width, PaletteBar.Height, 0); //跳視窗變成最上層0, 0, 0, 30
 	Status = (*pGraph)->Blt(*pGraph, DescripBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 630, 0, DescripBar.Width, DescripBar.Height, 0); //Select Bar
 	Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); //先畫背景
 
@@ -372,10 +398,20 @@ GraphicsSimpleDemo(
 		switch (KeyCode.UnicodeChar)
 		{
 		case CHAR_SPACE  :
-				DrawRectangle(*pGraph, &DrawingBoard, X, Y, X+COLOR_BLOCK_EDGE, Y+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_PALEGREEN, 3);  
+				//DrawRectangle(*pGraph, &DrawingBoard, X, Y, X+COLOR_BLOCK_EDGE, Y+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_PALEGREEN, 3);  
+				DrawRectangle(*pGraph, &DrawingBoard, X, Y, X+COLOR_BLOCK_EDGE, Y+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SelectedColor, 3);  
 				LX = (X - COLOR_BOARD_X1) / COLOR_BLOCK_EDGE;
 				LY = (Y - COLOR_BOARD_Y1) / COLOR_BLOCK_EDGE;
-				Locate[LX][LY] = SOLAR_PALEGREEN;
+				//Locate[LX][LY] = SOLAR_PALEGREEN;
+				//try
+				if(SelectedColor==SOLAR_PALEGREEN)
+				{
+					Locate[LX][LY] = SOLAR_PALEGREEN;
+				}
+				else
+				{
+					Locate[LX][LY] = SelectedColor;
+				}
 				break;
 
 		//刪除單格
@@ -422,19 +458,12 @@ GraphicsSimpleDemo(
 		case CHAR_TAB :
 				DrawBoundary(*pGraph, DrawingBoard, X, Y, COLOR_BLOCK_EDGE, SOLAR_WHITE);
 				Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); //T
-				//DrawRectangle(*pGraph, &PaletteBar,  30,  20,  30+COLOR_BLOCK_EDGE, 20+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_YELLOW, 3); 
 				MakeThickLine(*pGraph, PaletteBar, SELECT_STARTX_WIDTH, SOLAR_RED);
 				Status = (*pGraph)->Blt(*pGraph,PaletteBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, PaletteBar.Width, PaletteBar.Height, 0);
 				
-				//UINT16 ttab=1; //switch (KeyCode.UnicodeChar)
-				//while(ttab){
-					//getch(&TKey);
-					SelectShow(*pGraph, PaletteBar, SELECT_X, KeyCode);
-				//	Status = (*pGraph)->Blt(*pGraph, PaletteBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, PaletteBar.Width, PaletteBar.Height, 0); //T
-				//	if(TKey.UnicodeChar == CHAR_CARRIAGE_RETURN)
-				//		ttab=0;
-				//}
-				DrawLine( *pGraph, &PaletteBar,   0,   20,  COLOR_BLOCK_EDGE,   20+COLOR_BLOCK_EDGE, SOLAR_RED, FullLine);//ForTest
+				SelectedColor=SelectShow(*pGraph, PaletteBar, SELECT_X, KeyCode);
+				//PrintString(*pGraph, &PaletteBar, 350,  0, SOLAR_WHITE,L" RETURN VAL :%x", SelectedColor);// L" ArrayX: %d , ArrayY: %d ", num, fillc   L" Tesss "
+				DrawRectangle(*pGraph, &PaletteBar, 530, 0, 530+COLOR_BLOCK_EDGE, 0+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SelectedColor, 3);  
 				Status = (*pGraph)->Blt(*pGraph,PaletteBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, PaletteBar.Width, PaletteBar.Height, 0);
 				DrawBoundary(*pGraph, DrawingBoard, X, Y, COLOR_BLOCK_EDGE, SOLAR_RED);
 				Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); //T
