@@ -53,7 +53,9 @@ Abstract:
 #define PUT_COLOR_CHECK(Sn)                  BlockActive(pGraph, DesktopImage, ColorBlockImage, ColorBlock, Sn, ColorCheck);    
 
 // Key related definition.
+#define CHAR_BackSpace                       0x0008
 #define CHAR_SPACE                           0x0020
+#define CHAR_D                               0x0064
 #define CHAR_F                               0x0066
 #define CHAR_R                               0x0072
 
