@@ -67,6 +67,23 @@ DrawBoundary (
 
 SOLAR_STATUS
 SOLAR_LIB
+MakeThickLine(
+  IN	 EFI_GRAPHICS_OUTPUT_PROTOCOL *pGraphOutput,
+  IN OUT SOLAR_IMAGE_INPUT 			  Image,
+  IN	 UINT16						  X,
+  IN	 UINT32						  Color
+)
+{
+	DrawBoundary(pGraphOutput, Image, X-1, 20-1, COLOR_BLOCK_EDGE+2 , Color);
+	DrawBoundary(pGraphOutput, Image, X-2, 20-2, COLOR_BLOCK_EDGE+4 , Color);
+	DrawBoundary(pGraphOutput, Image, X-3, 20-3, COLOR_BLOCK_EDGE+6 , Color);
+
+	return SOLAR_SUCCESS;
+}
+	
+
+SOLAR_STATUS
+SOLAR_LIB
 FillRecursion(
   IN     EFI_GRAPHICS_OUTPUT_PROTOCOL *pGraphOutput,
   IN OUT SOLAR_IMAGE_INPUT            Image,
@@ -119,20 +136,6 @@ SelectShow(
 	PrintString(pGraphOutput, &Image, 0,  0, SOLAR_WHITE,L" ArrayX: %d , ArrayY: %d ", num, fillc);// L" ArrayX: %d , ArrayY: %d ", num, fillc   L" Tesss "
 	Status = (pGraphOutput)->Blt(pGraphOutput, Image.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, Image.Width, Image.Height, 0);
 	*/
-	//while來等待直到Tkey.ScanCode= SCAN_RIGHT;被敲滿5次挑出迴圈繼續判斷是敲哪個件做不同動作
-	/*
-	UINT16 loop=1,times=0;
-	while(Tkey.ScanCode=SCAN_RIGHT)
-	{
-		times=1;
-		//Draw
-		times+=1;
-		if(times=6)
-			loop=0;
-	}
-	if (SX>150) => SX= 30 //right
-	if (SX< 30) => SX=150 // left
-	*/
 	EFI_STATUS    		Status;
 	UINT16 loop=1;
 	while(loop)
@@ -141,30 +144,23 @@ SelectShow(
 		switch (Tkey.ScanCode)
 		{
 		case SCAN_RIGHT:
-			DrawBoundary(pGraphOutput, Image, SelectX-1, 20-1, COLOR_BLOCK_EDGE+2, SOLAR_BLACK);
-			DrawBoundary(pGraphOutput, Image, SelectX-2, 20-2, COLOR_BLOCK_EDGE+4 , SOLAR_BLACK);
-			DrawBoundary(pGraphOutput, Image, SelectX-3, 20-3, COLOR_BLOCK_EDGE+6 , SOLAR_BLACK);
+			MakeThickLine(pGraphOutput, Image, SelectX, SOLAR_BLACK);
 			if (SelectX >= 30 + 4*SELECT_STARTX_WIDTH)
 				SelectX = 30;
 			else
 				SelectX += SELECT_STARTX_WIDTH;
-			DrawBoundary(pGraphOutput, Image, SelectX-1, 20-1, COLOR_BLOCK_EDGE+2, SOLAR_RED);
-			DrawBoundary(pGraphOutput, Image, SelectX-2, 20-2, COLOR_BLOCK_EDGE+4 , SOLAR_RED);
-			DrawBoundary(pGraphOutput, Image, SelectX-3, 20-3, COLOR_BLOCK_EDGE+6 , SOLAR_RED);
+			MakeThickLine(pGraphOutput, Image, SelectX, SOLAR_RED);
 			break;
 		
 		case SCAN_LEFT:
-			DrawBoundary(pGraphOutput, Image, SelectX-1, 20-1, COLOR_BLOCK_EDGE+2, SOLAR_BLACK);
-			DrawBoundary(pGraphOutput, Image, SelectX-2, 20-2, COLOR_BLOCK_EDGE+4 , SOLAR_BLACK);
-			DrawBoundary(pGraphOutput, Image, SelectX-3, 20-3, COLOR_BLOCK_EDGE+6 , SOLAR_BLACK);
+			MakeThickLine(pGraphOutput, Image, SelectX, SOLAR_BLACK);
 			if (SelectX <= 30 )
 				SelectX = 30 + 4*SELECT_STARTX_WIDTH;
 			else
 				SelectX -= SELECT_STARTX_WIDTH;
-			DrawBoundary(pGraphOutput, Image, SelectX-1, 20-1, COLOR_BLOCK_EDGE+2, SOLAR_RED);
-			DrawBoundary(pGraphOutput, Image, SelectX-2, 20-2, COLOR_BLOCK_EDGE+4 , SOLAR_RED);
-			DrawBoundary(pGraphOutput, Image, SelectX-3, 20-3, COLOR_BLOCK_EDGE+6 , SOLAR_RED);
+			MakeThickLine(pGraphOutput, Image, SelectX, SOLAR_RED);
 			break;
+
 		}
 		Status = (pGraphOutput)->Blt(pGraphOutput, Image.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, Image.Width, Image.Height, 0);
 
@@ -172,49 +168,20 @@ SelectShow(
 		{
 		case CHAR_CARRIAGE_RETURN :
 			PrintString(pGraphOutput, &Image, 0, 0, SOLAR_WHITE, L" ENTER ");
-			DrawBoundary(pGraphOutput, Image, SelectX-1, 20-1, COLOR_BLOCK_EDGE+2, SOLAR_BLACK);
-			DrawBoundary(pGraphOutput, Image, SelectX-2, 20-2, COLOR_BLOCK_EDGE+4 , SOLAR_BLACK);
-			DrawBoundary(pGraphOutput, Image, SelectX-3, 20-3, COLOR_BLOCK_EDGE+6 , SOLAR_BLACK);
+			MakeThickLine(pGraphOutput, Image, SelectX, SOLAR_BLACK);
 			//get color and change
 			loop=0;
+			break;
+
+		case CHAR_Q:
+		case CHAR_q:
+			MakeThickLine(pGraphOutput, Image, SelectX, SOLAR_BLACK);
+			loop = 0;
 			break;
 		}
 			
 	}
-/*
-	switch (Tkey.ScanCode)
-	{
-	case SCAN_RIGHT:
 
-		for(UINT16 SX=30; SX<160 ; SX+=SELECT_STARTX_WIDTH)
-		{
-			DrawBoundary(pGraphOutput, Image, SX, 20, COLOR_BLOCK_EDGE, SOLAR_WHITE);
-			Tkey.ScanCode= SCAN_RIGHT;
-			DrawBoundary(pGraphOutput, Image, SX+SELECT_STARTX_WIDTH, 20, COLOR_BLOCK_EDGE, SOLAR_DEEPPINK);
-		}
-		
-
-		DrawBoundary(pGraphOutput, Image, SelectX, 20, COLOR_BLOCK_EDGE, SOLAR_WHITE);
-		Status = (pGraphOutput)->Blt(pGraphOutput, Image.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, Image.Width, Image.Height, 0);
-		if (SelectX >= 30 + 4*SELECT_STARTX_WIDTH)
-			SelectX = 30;
-		else
-			SelectX += SELECT_STARTX_WIDTH;
-		DrawBoundary(pGraphOutput, Image, SelectX, 20, COLOR_BLOCK_EDGE, SOLAR_LIME);
-		Status = (pGraphOutput)->Blt(pGraphOutput, Image.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, Image.Width, Image.Height, 0);
-		break;
-	
-	case SCAN_LEFT:
-		break;
-	}
-	switch (Tkey.UnicodeChar)
-	{
-	case CHAR_CARRIAGE_RETURN :
-		PrintString(pGraphOutput, &Image, 0, 0, SOLAR_WHITE, L" ENTER ");
-		//get color and change
-		break;
-	}
-*/
 	return SOLAR_SUCCESS;
 }
 
@@ -265,18 +232,18 @@ GraphicsSimpleDemo(
 	
 	//cOut = gST->ConOut;//07G
   	//cIn  = gST->ConIn;//07G
-	SOLAR_IMAGE_INPUT	SelectBar;
+	SOLAR_IMAGE_INPUT	DescripBar;
 	SOLAR_IMAGE_INPUT	DrawingBoard; 
 	SOLAR_IMAGE_INPUT	PaletteBar; 
 	//SOLAR_IMAGE_INPUT	AllviewBoard;//for reset
 
-	SelectBar.BltBuffer=(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)NULL;
-	SelectBar.Width=170;
-	SelectBar.Height=600;
+	DescripBar.BltBuffer=(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)NULL;
+	DescripBar.Width=170;
+	DescripBar.Height=600;
 
-	DrawingBoard.BltBuffer=(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)NULL; //
-	DrawingBoard.Width=630; //
-	DrawingBoard.Height=530; //
+	DrawingBoard.BltBuffer=(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)NULL; 
+	DrawingBoard.Width=630; 
+	DrawingBoard.Height=530; 
 
 	PaletteBar.BltBuffer=(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)NULL;
 	PaletteBar.Width=630;
@@ -286,7 +253,7 @@ GraphicsSimpleDemo(
 	AllviewBoard.Width=630;
 	AllviewBoard.Height=550;
 */
-	if ((SelectBar.BltBuffer = (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) EfiLibAllocatePool(SelectBar.Width * SelectBar.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL)))==NULL){
+	if ((DescripBar.BltBuffer = (EFI_GRAPHICS_OUTPUT_BLT_PIXEL *) EfiLibAllocatePool(DescripBar.Width * DescripBar.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL)))==NULL){
 		return EFI_OUT_OF_RESOURCES;
 	}
 
@@ -323,7 +290,6 @@ GraphicsSimpleDemo(
 	//PaletteBar
 	EfiSetMem(PaletteBar.BltBuffer, PaletteBar.Height*PaletteBar.Width*sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL),EFI_BLACK);
 	FillScreen(*pGraph, SOLAR_BLACK);
-	//PrintString(*pGraph, &PaletteBar, 0,  20, SOLAR_WHITE, L" COOOOOOOLLLL");
 	DrawRectangle(*pGraph, &PaletteBar,  30, 20,  30+COLOR_BLOCK_EDGE, 20+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_YELLOW, 3); 
 	DrawRectangle(*pGraph, &PaletteBar,  60, 20,  60+COLOR_BLOCK_EDGE, 20+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_RED, 3); 
 	DrawRectangle(*pGraph, &PaletteBar,  90, 20,  90+COLOR_BLOCK_EDGE, 20+COLOR_BLOCK_EDGE, SOLAR_WHITE, 0, Fill, SOLAR_BLUE, 3); 
@@ -332,19 +298,20 @@ GraphicsSimpleDemo(
 	PrintString(*pGraph, &PaletteBar, 250,  25, SOLAR_WHITE, L"Please type HEX RGB color(6): "); //or 用判斷限制只能打六位數字
 
 	//Select function Bar(之後可以跟畫框一起Show出來先把Function做好)
-	EfiSetMem(SelectBar.BltBuffer, SelectBar.Width * SelectBar.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL), 0);
+	EfiSetMem(DescripBar.BltBuffer, DescripBar.Width * DescripBar.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL), 0);
 	FillScreen(*pGraph, SOLAR_YELLOW);
-	PrintString(*pGraph, &SelectBar, 0,  30, SOLAR_WHITE, L" 'Backspace' : Reset Board ");
-	PrintString(*pGraph, &SelectBar, 0,  60, SOLAR_WHITE, L" 'SPACE' : Make Boundary ");//show不出來 鑽太久惹 650 20是800600的位置 要以Select的大小畫
-	PrintString(*pGraph, &SelectBar, 0,  90, SOLAR_WHITE, L" 'Tab' : Choose Color ");
-	PrintString(*pGraph, &SelectBar, 0, 120, SOLAR_WHITE, L" 'D' : Delete Single Block ");
-	PrintString(*pGraph, &SelectBar, 0, 150, SOLAR_WHITE, L" 'F' : Fill Color ");
+	PrintString(*pGraph, &DescripBar, 0,  30, SOLAR_WHITE, L" 'Backspace' : Reset Board ");
+	PrintString(*pGraph, &DescripBar, 0,  60, SOLAR_WHITE, L" 'SPACE' : Make Boundary ");//show不出來 鑽太久惹 650 20是800600的位置 要以Select的大小畫
+	PrintString(*pGraph, &DescripBar, 0,  90, SOLAR_WHITE, L" 'Tab' : Choose Color ");
+	PrintString(*pGraph, &DescripBar, 0, 120, SOLAR_WHITE, L" 'Q' : Quit Choose Bar ");
+	PrintString(*pGraph, &DescripBar, 0, 150, SOLAR_WHITE, L" 'D' : Delete Single Block ");
+	PrintString(*pGraph, &DescripBar, 0, 180, SOLAR_WHITE, L" 'F' : Fill Color ");
 
 	EfiSetMem(DrawingBoard.BltBuffer, DrawingBoard.Width * DrawingBoard.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL), EFI_GREEN);
 	FillScreen(*pGraph, SOLAR_BLACK); //SOLAR_YELLOW
 	
-	Status = (*pGraph)->Blt(*pGraph,PaletteBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, PaletteBar.Width, PaletteBar.Height, 0); //COLOR_BOARD_X1, COLOR_BOARD_Y1,
-	Status = (*pGraph)->Blt(*pGraph, SelectBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 630, 0, SelectBar.Width, SelectBar.Height, 0); //Select Bar
+	Status = (*pGraph)->Blt(*pGraph, PaletteBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, PaletteBar.Width, PaletteBar.Height, 0); //COLOR_BOARD_X1, COLOR_BOARD_Y1,
+	Status = (*pGraph)->Blt(*pGraph, DescripBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 630, 0, DescripBar.Width, DescripBar.Height, 0); //Select Bar
 	Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); //先畫背景
 
 	for (UINT16 i = 0; i < 26; i++) {
@@ -409,9 +376,6 @@ GraphicsSimpleDemo(
 				LX = (X - COLOR_BOARD_X1) / COLOR_BLOCK_EDGE;
 				LY = (Y - COLOR_BOARD_Y1) / COLOR_BLOCK_EDGE;
 				Locate[LX][LY] = SOLAR_PALEGREEN;
-				//PrintString(*pGraph, &SelectBar, 0, 120, SOLAR_WHITE, L" Locate :[%d][%d]",LX,LY);
-				//PrintString(*pGraph, &SelectBar, 0, 140, SOLAR_WHITE, L" L color %x",Locate[LX][LY]);
-				//Status = (*pGraph)->Blt(*pGraph, SelectBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 630, 0, SelectBar.Width, SelectBar.Height, 0); //Select Bar
 				break;
 
 		//刪除單格
@@ -459,24 +423,22 @@ GraphicsSimpleDemo(
 				DrawBoundary(*pGraph, DrawingBoard, X, Y, COLOR_BLOCK_EDGE, SOLAR_WHITE);
 				Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); //T
 				//DrawRectangle(*pGraph, &PaletteBar,  30,  20,  30+COLOR_BLOCK_EDGE, 20+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_YELLOW, 3); 
-				DrawBoundary(*pGraph, PaletteBar, 30-1, 20-1, COLOR_BLOCK_EDGE+2, SOLAR_RED);
-				DrawBoundary(*pGraph, PaletteBar, 30-2, 20-2, COLOR_BLOCK_EDGE+4 , SOLAR_RED);
-				DrawBoundary(*pGraph, PaletteBar, 30-3, 20-3, COLOR_BLOCK_EDGE+6 , SOLAR_RED);
+				MakeThickLine(*pGraph, PaletteBar, SELECT_STARTX_WIDTH, SOLAR_RED);
 				Status = (*pGraph)->Blt(*pGraph,PaletteBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, PaletteBar.Width, PaletteBar.Height, 0);
+				
 				//UINT16 ttab=1; //switch (KeyCode.UnicodeChar)
-				UINT16 SX=30;
 				//while(ttab){
 					//getch(&TKey);
-					SelectShow(*pGraph, PaletteBar, SX, KeyCode);
-					Status = (*pGraph)->Blt(*pGraph, PaletteBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, PaletteBar.Width, PaletteBar.Height, 0); //T
+					SelectShow(*pGraph, PaletteBar, SELECT_X, KeyCode);
+				//	Status = (*pGraph)->Blt(*pGraph, PaletteBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, PaletteBar.Width, PaletteBar.Height, 0); //T
 				//	if(TKey.UnicodeChar == CHAR_CARRIAGE_RETURN)
 				//		ttab=0;
 				//}
-				DrawLine( *pGraph, &PaletteBar,   0,   20,  COLOR_BLOCK_EDGE,   20+COLOR_BLOCK_EDGE, SOLAR_RED, DottedLineTen);//FullLine
+				DrawLine( *pGraph, &PaletteBar,   0,   20,  COLOR_BLOCK_EDGE,   20+COLOR_BLOCK_EDGE, SOLAR_RED, FullLine);//ForTest
+				Status = (*pGraph)->Blt(*pGraph,PaletteBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, PaletteBar.Width, PaletteBar.Height, 0);
 				DrawBoundary(*pGraph, DrawingBoard, X, Y, COLOR_BLOCK_EDGE, SOLAR_RED);
 				Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); //T
-				Status = (*pGraph)->Blt(*pGraph,PaletteBar.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 530, PaletteBar.Width, PaletteBar.Height, 0);
-				break;//進程式的判斷
+				break;
 
 		}	
 		Status = (*pGraph)->Blt(*pGraph, DrawingBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 0, 0, DrawingBoard.Width, DrawingBoard.Height, 0); //T
@@ -507,7 +469,7 @@ GraphicsSimpleDemo(
 
 	gBS->FreePool(Image->BltBuffer);
 	gBS->FreePool(DrawingBoard.BltBuffer);
-	gBS->FreePool(SelectBar.BltBuffer);
+	gBS->FreePool(DescripBar.BltBuffer);
 	gBS->FreePool(PaletteBar.BltBuffer); 
 	//gBS->FreePool(AllviewBoard.BltBuffer);
 	

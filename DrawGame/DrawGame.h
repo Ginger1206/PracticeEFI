@@ -45,6 +45,7 @@ Abstract:
 #define COLOR_BOARD_HEIGH                    COLOR_BOARD_WIDTH
 #define COLOR_BOARD_X1                       50
 #define COLOR_BOARD_Y1                       25
+#define SELECT_X                             30
 
 // Color Block related definition
 #define COLOR_BLOCK_EDGE                     20 // = COLOR_BLOCK_WIDTH = COLOR_BLOCK_HEIGHT 此非固定的應該要COLOR_BOARD_WIDTH除畫的行數
@@ -62,6 +63,8 @@ Abstract:
 #define CHAR_d                               0x0064
 #define CHAR_F                               0x0046
 #define CHAR_f                               0x0066
+#define CHAR_Q                               0x0051
+#define CHAR_q                               0x0071
 #define CHAR_R                               0x0052
 #define CHAR_r                               0x0072
 
