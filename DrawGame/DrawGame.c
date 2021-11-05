@@ -254,7 +254,13 @@ TypeColor(
 
 		case CHAR_CARRIAGE_RETURN :
 			if(N<5)
-				PrintString(pGraphOutput, &Image, 515, 25, TColor, L"[Error!!!]");
+				PrintString(pGraphOutput, &Image, 515, 25, SOLAR_RED, L"[Error!!!]");
+			loop=0;
+			break;
+
+		case CHAR_Q:
+		case CHAR_q:
+			PrintString(pGraphOutput, &Image, 515, 25, SOLAR_RED, L"[Quit!]");
 			loop=0;
 			break;
 		}
@@ -428,7 +434,7 @@ GraphicsSimpleDemo(
 	UINT16				CoordinateY = COLOR_BOARD_Y1; 
 	UINT16				X = CoordinateX, Y = CoordinateY;
 	UINT16              LX = 0, LY = 0; 
-	UINT32				DesireColor = 0, TabC=0;//
+	UINT32				DesireColor = 0, TabC=0;
 	UINT32				SelectedColor=SOLAR_YELLOW;//SelectedColor=0
 	
 	SOLAR_IMAGE_INPUT	DescripBar;
@@ -532,7 +538,7 @@ GraphicsSimpleDemo(
 	PrintString(*pGraph, &DescripBar, 0,  30, SOLAR_WHITE, L" 'Backspace' : Reset Board ");
 	PrintString(*pGraph, &DescripBar, 0,  60, SOLAR_WHITE, L" 'SPACE' : Make Boundary ");//show不出來 鑽太久惹 650 20是800600的位置 要以Select的大小畫
 	PrintString(*pGraph, &DescripBar, 0,  90, SOLAR_WHITE, L" 'Tab' : Choose or Type Color ");
-	PrintString(*pGraph, &DescripBar, 0, 120, SOLAR_WHITE, L" 'Q' : Quit Choose Bar ");
+	PrintString(*pGraph, &DescripBar, 0, 120, SOLAR_WHITE, L" 'Q' : Quit Choose or Type Bar ");
 	PrintString(*pGraph, &DescripBar, 0, 150, SOLAR_WHITE, L" 'Enter' : Change Color ");
 	PrintString(*pGraph, &DescripBar, 0, 180, SOLAR_WHITE, L" 'D' : Delete Single Block ");
 	PrintString(*pGraph, &DescripBar, 0, 210, SOLAR_WHITE, L" 'F' : Fill Color ");
