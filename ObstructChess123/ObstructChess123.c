@@ -202,18 +202,7 @@ InitiateGame (
   FillScreen (*pGraph, SOLAR_BLACK);    // Fill black color in to background.
   //getch (&KeyCode);//tryG210406
   //BmpFileToSolarImage (*pGraph, INIT_BACKGROUND_FILE, DesktopImage, &BmpWidth, &BmpHeight); //200812G
-  Status = (*pGraph)->Blt (
-             *pGraph,
-             DesktopImage->BltBuffer,
-             EfiBltBufferToVideo,
-             0,
-             0,
-             0,
-             0,
-             DesktopImage->Width,
-             DesktopImage->Height,
-             0
-             );
+  Status = (*pGraph)->Blt (*pGraph,DesktopImage->BltBuffer,EfiBltBufferToVideo,0,0,0,0,DesktopImage->Width, DesktopImage->Height, 0 );
   if (EFI_ERROR (Status)) {
     return EFI_DEVICE_ERROR;
   }
@@ -225,8 +214,7 @@ InitiateGame (
 
     *isSinglePlayer = true;
     while (ItemPtr == 0xFF) {
-      ItemPtr = SelectItem (
-                *pGraph, 
+      ItemPtr = SelectItem (  *pGraph, 
                 *DesktopImage, 
                 102, 
                 ItemNum * ITEM_HEIGHT, 

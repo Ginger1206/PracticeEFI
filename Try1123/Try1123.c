@@ -60,15 +60,6 @@ Try1123(
 		cOut->OutputString(cOut, L"See ya");
 		break;
 	}
-	/*
-	TransparentBltBufferToVideo(
-		pGraph,
-		&(ChessBlock + Sn)->BackgroundImage,
-		&DesktopImage,
-		(ChessBlock + Sn)->Position.x - (15 / 2),
-		(ChessBlock + Sn)->Position.y - (15 / 2),
-		TransparentColor
-	);
-	*/
+
 	return EFI_SUCCESS;
 }
