@@ -17,6 +17,7 @@ COMPONENT_TYPE       = APPLICATION
 
 [sources.common]
   UndoTry.c
+  ..\_DevelopAddition\_Debug.c
 
 [includes.common]
   .
@@ -41,8 +42,8 @@ COMPONENT_TYPE       = APPLICATION
   SolarCppLib
 
 [nmake.common]
-  C_STD_INCLUDE=
+  #C_STD_INCLUDE=
   IMAGE_ENTRY_POINT=UndoTry
   #
-  # C_STD_FLAGS = $(C_STD_FLAGS) /TP
+  C_STD_FLAGS = $(C_STD_FLAGS) /TP
 
