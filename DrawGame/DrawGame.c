@@ -263,6 +263,10 @@ TypeColor(
 			PrintString(pGraphOutput, &Image, 515, 25, SOLAR_RED, L"[Quit!]");
 			loop=0;
 			break;
+		
+		case CHAR_TAB:
+			loop=0;
+			break;
 		}
 
 		for(UINT16 i=0;i<6;i++)
@@ -542,7 +546,8 @@ GraphicsSimpleDemo(
 	PrintString(*pGraph, &DescripBar, 0, 150, SOLAR_WHITE, L" 'Enter' : Change Color ");
 	PrintString(*pGraph, &DescripBar, 0, 180, SOLAR_WHITE, L" 'D' : Delete Single Block ");
 	PrintString(*pGraph, &DescripBar, 0, 210, SOLAR_WHITE, L" 'F' : Fill Color ");
-	PrintString(*pGraph, &DescripBar, 0, 240, SOLAR_WHITE, L" 'ESC' : End Draw Board ");
+	PrintString(*pGraph, &DescripBar, 0, 240, SOLAR_WHITE, L" 'R' : Recovery Previous Action ");
+	PrintString(*pGraph, &DescripBar, 0, 270, SOLAR_WHITE, L" 'ESC' : End Draw Board ");
 
 	EfiSetMem(DrawingBoard.BltBuffer, DrawingBoard.Width * DrawingBoard.Height * sizeof(EFI_GRAPHICS_OUTPUT_BLT_PIXEL), EFI_GREEN);
 	FillScreen(*pGraph, SOLAR_BLACK); //SOLAR_YELLOW
@@ -611,6 +616,7 @@ GraphicsSimpleDemo(
 		switch (KeyCode.UnicodeChar)
 		{
 		case CHAR_SPACE  :
+				memcpy(&RecAry,&Locate,sizeof(Locate));//211115G加
 				DrawRectangle(*pGraph, &DrawingBoard, X, Y, X+COLOR_BLOCK_EDGE, Y+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SelectedColor, 3);  
 				LX = (X - COLOR_BOARD_X1) / COLOR_BLOCK_EDGE;
 				LY = (Y - COLOR_BOARD_Y1) / COLOR_BLOCK_EDGE;
@@ -627,6 +633,7 @@ GraphicsSimpleDemo(
 		//刪除單格
 		case CHAR_D:
 		case CHAR_d:
+				memcpy(&RecAry,&Locate,sizeof(Locate));//211115G加
 				DrawRectangle(*pGraph, &DrawingBoard, X, Y, X+COLOR_BLOCK_EDGE, Y+COLOR_BLOCK_EDGE, SOLAR_RED, 0, Fill, SOLAR_BLACK, 3);
 				LX = (X - COLOR_BOARD_X1) / COLOR_BLOCK_EDGE;
 				LY = (Y - COLOR_BOARD_Y1) / COLOR_BLOCK_EDGE;
@@ -647,7 +654,7 @@ GraphicsSimpleDemo(
 				{
 					for(int k=0; k<25 ; k++)
 					{
-						Locate[j][k] = 0; //之後抓陣列可能要確認這裡的數值0510
+						Locate[j][k] = 0; //之後抓陣列可能要確認這裡的數值210510
 					}
 				}
 				break;
@@ -655,9 +662,27 @@ GraphicsSimpleDemo(
 		//復原成上一個樣子
 		case CHAR_R: 
 		case CHAR_r:
-				memcpy(&RecAry,&Locate,sizeof(Locate));//211015G function過 =>變現流
 				//make store action
-			/*
+				//memcpy(&RecAry,&Locate,sizeof(Locate));//211015G function過 =>變現流
+				for(UINT16 j=0; j<25 ; j++)
+				{
+					for(UINT16 k=0; k<25 ; k++)
+					{
+						UINT16 Dx = COLOR_BLOCK_EDGE*k+COLOR_BOARD_X1;//50
+						UINT16 Dy = COLOR_BLOCK_EDGE*j+COLOR_BOARD_Y1;//25
+						//RecAry[j][k];
+						//Locate[j][k] = RecAry[j][k]; 
+						DrawRectangle(*pGraph, &DrawingBoard, Dx, Dy, Dx+COLOR_BLOCK_EDGE, Dy+COLOR_BLOCK_EDGE, RecAry[k][j], 0, Fill, RecAry[k][j], 3);  
+						Locate[j][k] = RecAry[j][k]; 
+					}
+				}
+				for (UINT16 i = 0; i < 26; i++) {
+						DrawHorizontalLine(*pGraph, &DrawingBoard, CoordinateX, CoordinateY + i * COLOR_BLOCK_EDGE, COLOR_BOARD_WIDTH, SOLAR_WHITE, FullLine); 
+						DrawVerticalLine(*pGraph, &DrawingBoard, CoordinateX + i * COLOR_BLOCK_EDGE, CoordinateY, COLOR_BOARD_HEIGH, SOLAR_WHITE, FullLine); 
+					}
+				DrawBoundary(*pGraph, DrawingBoard, X, Y, COLOR_BLOCK_EDGE, SOLAR_RED);
+
+				/* //for test review
 				for(UINT16 j=0; j<25 ; j++)
 				{
 					for(UINT16 k=0; k<25 ; k++)
@@ -668,7 +693,8 @@ GraphicsSimpleDemo(
 					}
 				}
 				Status = (*pGraph)->Blt(*pGraph, AllviewBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 600, 400, AllviewBoard.Width, AllviewBoard.Height, 0);  //G
-			*/
+				*/
+		
 				break;				
 /*
 		//for test 
@@ -679,6 +705,8 @@ GraphicsSimpleDemo(
 		//倒色 SOLAR_DEEPPINK
 		case CHAR_F:
 		case CHAR_f: 
+				memcpy(&RecAry,&Locate,sizeof(Locate));//211115G加
+
 				LX = (X - COLOR_BOARD_X1) / COLOR_BLOCK_EDGE;
 				LY = (Y - COLOR_BOARD_Y1) / COLOR_BLOCK_EDGE;
 				DesireColor = Locate[LX][LY]; 
@@ -806,7 +834,6 @@ DrawGame(
 	EFI_STATUS                    Status = EFI_SUCCESS;
 	EFI_SIMPLE_TEXT_OUT_PROTOCOL* COut; 
 	//EFI_INPUT_KEY                 KeyCode;
-	//UINT8						  i=2; //
 	UINT16						  HorizontalResolution;
 	UINT16                        VerticalResolution;
 	EFI_GRAPHICS_OUTPUT_PROTOCOL  *pGraph;
@@ -879,20 +906,6 @@ DrawGame(
 	GraphicsSimpleDemo(&pGraph, &DesktopImage);
 	//Status=(EFI_STATUS)GraphicsSimpleDemo(&pGraph, &DesktopImage, &ColorBlock);
 
-	/*
-	//cOut->OutputString(cOut, L"Hello EFI123 ! \t"); //add "\n" show enter&tab 
-	switch (i) {
-	case 0:                            // 10X10
-		cTry->OutputString(cTry, L"this is 1");
-		break;
-	case 1:                            // 25x25
-		cTry->OutputString(cTry, L"Here is 2");
-		break;
-	case 2:                            // 50*50
-		cTry->OutputString(cTry, L"See ya");
-		break;
-	}
-	*/
 	
 
 	goto ProgramDone;                     // Jump for exit program.
