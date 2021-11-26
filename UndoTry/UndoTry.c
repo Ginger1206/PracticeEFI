@@ -18,6 +18,7 @@ extern "C"{
 #include "EfiDriverLib.h"
 #include "SolarConsoleLib.h"
 #include "SolarGraphicsLib.h"
+#include "memory.h"//memcpy
 #include EFI_PROTOCOL_DEFINITION (ConsoleControl)
 }
 #include "SolarCppLib.h"
@@ -209,6 +210,8 @@ GraphicsTry(
 		switch (KeyCode.UnicodeChar)
 		{
 		case CHAR_SPACE  :
+				//make store action
+				memcpy(&RecAry,&Locate,sizeof(Locate));
 				DrawRectangle(*pGraph, &DrawBoard, X, Y, X+20, Y+20, SOLAR_RED, 0, Fill, SelectedColor, 3);  
 				LX = (X - 50) / 20;
 				LY = (Y - 25) / 20;
@@ -225,6 +228,8 @@ GraphicsTry(
 		//刪除單格
 		case CHAR_D:
 		case CHAR_d:
+				//make store action
+				memcpy(&RecAry,&Locate,sizeof(Locate));
 				DrawRectangle(*pGraph, &DrawBoard, X, Y, X+20, Y+20, SOLAR_RED, 0, Fill, SOLAR_BLACK, 3);
 				LX = (X - 50) / 20;
 				LY = (Y - 25) / 20;
@@ -233,10 +238,6 @@ GraphicsTry(
 		
 		case CHAR_R: 
 		case CHAR_r:
-			/*
-				memcpy(&RecAry,&Locate,sizeof(Locate));
-				//make store action
-			
 				for(UINT16 j=0; j<25 ; j++)
 				{
 					for(UINT16 k=0; k<25 ; k++)
@@ -247,7 +248,7 @@ GraphicsTry(
 					}
 				}
 				Status = (*pGraph)->Blt(*pGraph, RecordBoard.BltBuffer, EfiBltBufferToVideo, 0, 0, 600, 400, RecordBoard.Width, RecordBoard.Height, 0);  //G
-			*/
+			
 				break;	
 		
 			

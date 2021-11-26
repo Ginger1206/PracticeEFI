@@ -25,6 +25,7 @@ COMPONENT_TYPE       = APPLICATION
   $(EDK_SOURCE)\Foundation
   $(EDK_SOURCE)\Foundation\Efi
   $(EDK_SOURCE)\Foundation\Efi\Include
+  $(EDK_SOURCE)\Foundation\Efi\Protocol\SimpleFileSystem
   $(EDK_SOURCE)\Foundation\Framework
   $(EDK_SOURCE)\Foundation\Framework\Include
   $(EDK_SOURCE)\Foundation\Include
@@ -33,6 +34,9 @@ COMPONENT_TYPE       = APPLICATION
 # Solar-System common include.
   $(SOLAR_SDK_SOURCE)\Common\Include
   $(SOLAR_SDK_SOURCE)\Common\Library\Include
+#Ginger20211117 - starts Add for memory.h memcpy
+  $(SOLAR_SDK_SOURCE)\Common\Library\Compatibility\Include
+#Ginger20211117 - ends
   $(SOLAR_SDK_SOURCE)\Common\Include\EdkReplace\Foundation\Include
 
 [libraries.common]
