@@ -18,7 +18,7 @@ extern "C" {
   #include "EfiDriverLib.h"
   #include "SolarConsoleLib.h"
   #include "SolarGraphicsLib.h"
-  #include "memory.h"//sdk root basic func define 
+  #include "memory.h"//sdk root basic func define ; include this lib. can use memcpy211117G
   #include EFI_PROTOCOL_DEFINITION (ConsoleControl)
 }
 #include "SolarCppLib.h"
@@ -385,7 +385,6 @@ SelectShow(
 
 		case CHAR_TAB:
 			MakeThickLine(pGraphOutput, Image, SelectX, SOLAR_BLACK);//210628
-			//PrintString(pGraphOutput, &Image, 435,  25, SOLAR_WHITE, L"___test___ "); //or 用判斷限制只能打六位數字
 			*TabC=1; 	
 			SColor = NowColor;//test
 			loop=0;
@@ -393,7 +392,6 @@ SelectShow(
 		
 		}
 		//PrintString(pGraphOutput, &Image, 0,  0, SOLAR_WHITE, L"Try keyboard"); //try0521
-			
 	}
 	return SColor;
 }

@@ -35,9 +35,9 @@ COMPONENT_TYPE       = APPLICATION
 # Solar-System common include.
   $(SOLAR_SDK_SOURCE)\Common\Include
   $(SOLAR_SDK_SOURCE)\Common\Library\Include
-#Ginger20200622 - starts
+#Ginger20210622 - starts
   $(SOLAR_SDK_SOURCE)\Common\Library\Compatibility\Include
-#Ginger20200622 - ends
+#Ginger20210622 - ends
   $(SOLAR_SDK_SOURCE)\Common\Include\EdkReplace\Foundation\Include
 
 [libraries.common]
